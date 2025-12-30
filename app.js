@@ -186,10 +186,14 @@ uploadBtn.onclick = () => dialog.showModal();
 closeBtn.onclick = () => dialog.close();
 
 doUpload.onclick = async () => {
+  const MAX_BATCH = 30;
   const files = Array.from(fileInput?.files || []);
   const desc = (descInput?.value || "").trim(); // 批量上传时：该描述会应用到本次所有图片
 
   if (files.length === 0) return alert("请选择图片");
+  if (files.length > MAX_BATCH) {
+    return alert(`一次最多上传 ${MAX_BATCH} 张图片，请分批上传（当前选择：${files.length} 张）`);
+  }
   if (files.some((f) => !f.type?.startsWith("image/"))) {
     return alert("只能上传图片文件");
   }

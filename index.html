@@ -56,17 +56,14 @@
   <!-- 上传弹窗（先占位，后续接上传 API） -->
   <dialog id="upload-dialog" class="dialog">
     <div class="dialog-head">
-      <div class="dialog-title">上传图片（占位）</div>
+      <div class="dialog-title">上传图片</div>
       <button id="close-dialog" class="icon-btn" aria-label="Close">✕</button>
     </div>
 
     <div class="dialog-body">
-      <p class="muted">
-        这里之后会接 Worker：生成 presigned PUT URL → 浏览器直传 R2。
-      </p>
 
       <label class="field">
-        <span>选择图片（可多选）</span>
+        <span>选择图片（可多选，最多30张）</span>
         <input id="file-input" type="file" accept="image/*" multiple />
       </label>
 
@@ -76,7 +73,7 @@
       </label>
 
       <div class="dialog-actions">
-        <button id="fake-upload" class="btn primary">上传（暂未接入）</button>
+        <button id="fake-upload" class="btn primary">上传</button>
       </div>
     </div>
   </dialog>
