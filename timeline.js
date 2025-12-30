@@ -64,17 +64,115 @@ async function loadEvents() {
     const note = e.note ? `<div class="event-note">${escapeHtml(e.note)}</div>` : "";
 
     return `
-      <a class="event-card" href="timeline.html?eventId=${encodeURIComponent(e.eventId)}">
-        ${cover}
-        <div class="event-info">
-          <div class="event-card-title">${escapeHtml(e.title || e.eventId)}</div>
-          <div class="event-card-meta">${escapeHtml(meta)}</div>
-          ${note}
-        </div>
-      </a>
+      <div class="timeline-item">
+        <div class="timeline-marker" aria-hidden="true"></div>
+        <a class="event-card" href="timeline.html?eventId=${encodeURIComponent(e.eventId)}">
+          ${cover}
+          <div class="event-info">
+            <div class="event-card-title">${escapeHtml(e.title || e.eventId)}</div>
+            <div class="event-card-meta">${escapeHtml(meta)}</div>
+            ${note}
+          </div>
+        </a>
+      </div>
     `;
   }).join("");
+
+  updateTimelineRail();
 }
+
+function catmullRomToBezier(points) {
+  if (points.length < 2) return "";
+
+  const path = [`M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`];
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[Math.max(0, i - 1)];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = points[Math.min(points.length - 1, i + 2)];
+
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+    path.push(
+      `C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`,
+    );
+  }
+  return path.join(" ");
+}
+
+let railRaf = 0;
+function updateTimelineRail() {
+  const stage = document.querySelector(".timeline-stage");
+  const rail = document.querySelector(".timeline-rail");
+  if (!stage || !rail) return;
+
+  // Only in list view
+  if (timelineView.style.display === "none") return;
+
+  if (railRaf) cancelAnimationFrame(railRaf);
+  railRaf = requestAnimationFrame(() => {
+    const height = Math.max(220, eventsEl.scrollHeight);
+    const width = 110;
+    rail.style.height = `${height}px`;
+
+    const markers = Array.from(document.querySelectorAll(".timeline-marker"));
+    const points = markers.map((m) => {
+      const r = m.getBoundingClientRect();
+      const s = stage.getBoundingClientRect();
+      const x = 56 + Math.sin((r.top - s.top) / 140) * 12;
+      const y = (r.top - s.top) + r.height / 2;
+      return { x, y };
+    }).filter((p) => Number.isFinite(p.y));
+
+    // Fallback if layout not ready
+    if (points.length < 2) {
+      const n = Math.max(3, Math.min(12, markers.length || 6));
+      const spacing = Math.max(120, Math.floor(height / n));
+      const p = [];
+      for (let i = 0; i < n; i++) {
+        p.push({ x: 56 + Math.sin(i * 0.9) * 14, y: 40 + i * spacing });
+      }
+      points.length = 0;
+      points.push(...p);
+    }
+
+    // Add endpoints a bit beyond first/last for a more organic curve
+    const first = points[0];
+    const last = points[points.length - 1];
+    const padded = [
+      { x: first.x - 6, y: Math.max(0, first.y - 60) },
+      ...points,
+      { x: last.x + 10, y: last.y + 80 },
+    ];
+
+    const d = catmullRomToBezier(padded);
+
+    rail.innerHTML = `
+      <svg class="rail-svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="railGlow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="4" result="b" />
+            <feColorMatrix in="b" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.9 0" result="g"/>
+            <feMerge>
+              <feMergeNode in="g"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+
+        <path class="rail-base" d="${d}" fill="none" />
+        <path class="rail-mid rail-pulse" d="${d}" fill="none" />
+        <path class="rail-glow" d="${d}" fill="none" filter="url(#railGlow)" />
+        <path class="rail-flow" d="${d}" fill="none" />
+      </svg>
+    `;
+  });
+}
+
+window.addEventListener("resize", () => updateTimelineRail());
 
 /* -------------------- Create event -------------------- */
 const newEventBtn = qs("new-event-btn");

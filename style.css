@@ -26,6 +26,47 @@ body{
   color:var(--text);
 }
 
+/* Timeline page: animated glow orbs background */
+.timeline-page{
+  position: relative;
+}
+.timeline-page .bg-orbs{
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.timeline-page .bg-orbs span{
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--s);
+  height: var(--s);
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+  opacity: var(--o);
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255,255,255,0.16), rgba(255,255,255,0.06) 35%, rgba(255,255,255,0.00) 68%);
+  filter: blur(0.2px);
+  animation: orbDrift var(--d) ease-in-out infinite alternate, orbPulse calc(var(--d) * 0.6) ease-in-out infinite;
+  will-change: transform, opacity;
+}
+@keyframes orbDrift{
+  0%{ transform: translate(-50%, -50%) translate3d(-14px, 10px, 0); }
+  100%{ transform: translate(-50%, -50%) translate3d(16px, -12px, 0); }
+}
+@keyframes orbPulse{
+  0%,100%{ opacity: var(--o); }
+  50%{ opacity: calc(var(--o) + 0.06); }
+}
+
+.timeline-page .topbar,
+.timeline-page .wrap{
+  position: relative;
+  z-index: 1;
+}
+
 .topbar{
   position:sticky;
   top:0;
@@ -95,16 +136,95 @@ body{
   margin: 0 auto;
 }
 
-/* ---------- Timeline / Events ---------- */
-.event-list{
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+/* ---------- Timeline (vertical) ---------- */
+.timeline-stage{
+  position: relative;
 }
-@media (max-width: 1000px){ .event-list{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 620px){ .event-list{ grid-template-columns: 1fr; } }
+.timeline-rail{
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 110px;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+.timeline-items{
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  position: relative;
+  z-index: 1;
+}
+.timeline-item{
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  align-items: start;
+}
+.timeline-marker{
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  margin-top: 26px;
+  justify-self: center;
+  background: rgba(255,255,255,0.72);
+  box-shadow:
+    0 0 0 6px rgba(255,255,255,0.05),
+    0 0 22px rgba(255,255,255,0.16);
+  border: 1px solid rgba(255,255,255,0.18);
+}
 
-.event-card{
+/* Root-like glowing rail SVG */
+.rail-svg{ display:block; }
+.rail-base{
+  stroke: rgba(255,255,255,0.06);
+  stroke-width: 22;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.rail-mid{
+  stroke: rgba(255,255,255,0.10);
+  stroke-width: 14;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.rail-glow{
+  stroke: rgba(255,255,255,0.14);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: .9;
+}
+.rail-flow{
+  stroke: rgba(255,255,255,0.26);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 42 240;
+  animation: railFlow 3.4s linear infinite;
+  opacity: .75;
+}
+.rail-pulse{
+  animation: railPulse 4.6s ease-in-out infinite;
+}
+@keyframes railFlow{
+  0%{ stroke-dashoffset: 0; }
+  100%{ stroke-dashoffset: -280; }
+}
+@keyframes railPulse{
+  0%,100%{ stroke-width: 13; opacity: .92; }
+  50%{ stroke-width: 16; opacity: .98; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .timeline-page .bg-orbs span,
+  .rail-flow,
+  .rail-pulse{
+    animation: none !important;
+  }
+}
+
+.timeline-page .event-card{
   display: flex;
   gap: 12px;
   padding: 12px;
@@ -116,13 +236,13 @@ body{
   box-shadow: var(--shadow2);
   transition: transform .18s ease, border-color .18s ease, background .18s ease;
 }
-.event-card:hover{
+.timeline-page .event-card:hover{
   transform: translateY(-1px);
   border-color: rgba(255,255,255,0.14);
   background: rgba(255,255,255,0.03);
 }
 
-.event-cover{
+.timeline-page .event-cover{
   width: 92px;
   height: 74px;
   object-fit: cover;
@@ -131,7 +251,7 @@ body{
   background: #0b0b0c;
   flex: 0 0 auto;
 }
-.event-cover.placeholder{
+.timeline-page .event-cover.placeholder{
   width: 92px;
   height: 74px;
   border-radius: 12px;
@@ -142,18 +262,18 @@ body{
   flex: 0 0 auto;
 }
 
-.event-info{ min-width: 0; }
-.event-card-title{
+.timeline-page .event-info{ min-width: 0; }
+.timeline-page .event-card-title{
   font-weight: 650;
   letter-spacing: .2px;
   margin-top: 2px;
 }
-.event-card-meta{
+.timeline-page .event-card-meta{
   color: var(--muted);
   font-size: 12px;
   margin-top: 6px;
 }
-.event-note{
+.timeline-page .event-note{
   color: var(--muted);
   font-size: 13px;
   margin-top: 8px;
