@@ -1,10 +1,14 @@
 const gallery = document.getElementById("gallery");
 
-// ✅ 动态列表（从 /api/list 取）
-let PHOTOS = []; // [{ key, desc }]
+// 先用静态列表做视觉测试（后面改成 fetch list）
+const PHOTOS = [
+  { key: "vacation/001.jpg", desc: "描述位置（可改/可空）" },
+  { key: "vacation/002.jpg", desc: "第二张照片的描述" },
+  { key: "cats/mimi.png",     desc: "" },
+];
 
-// ✅ 对齐你现在的读取接口：/api/img?key=
-const IMAGE_BASE = "/api/img?key=";
+// 如果你在本地用 images/ 测试，把它改为 "/images/"
+const IMAGE_BASE = "/api/image?key=";
 
 function escapeHtml(s) {
   return (s ?? "").replace(/[&<>"']/g, (c) => ({
@@ -13,7 +17,7 @@ function escapeHtml(s) {
 }
 
 function imgUrl(key){
-  // IMAGE_BASE 可能是 "/api/img?key=" 或 "/images/"
+  // IMAGE_BASE 可能是 "/api/image?key=" 或 "/images/"
   if (IMAGE_BASE.includes("?key=")) return `${IMAGE_BASE}${encodeURIComponent(key)}`;
   return `${IMAGE_BASE}${key}`;
 }
@@ -25,26 +29,8 @@ function render() {
       <figcaption>${escapeHtml(p.desc)}</figcaption>
     </figure>
   `).join("");
-
-  // ✅ 每次 render 后重新绑定 hover polish（因为节点变了）
-  attachHoverPolish();
 }
-
-// ✅ 从 R2 拉列表（你的 list.js 返回 { keys: [...] }）
-async function loadList() {
-  const res = await fetch("/api/list", { cache: "no-store" });
-  if (!res.ok) throw new Error(`list failed: ${res.status}`);
-  const data = await res.json();
-  const items = data.items || [];
-
-  // 你当前 list.js 只有 key，没有 desc，所以 desc 先留空
-  PPHOTOS = items.map((it) => ({ key: it.key, desc: it.desc || "" }));
-  render();
-}
-
-// 初次加载
-loadList().catch(console.error);
-
+render();
 
 /* ---------- Lightbox logic (with prev/next + animation) ---------- */
 const lightbox = document.getElementById("lightbox");
@@ -74,6 +60,7 @@ function openLightbox(idx){
 
 function closeLightbox(){
   lightbox.setAttribute("aria-hidden", "true");
+  // 可选：清空 src，避免关闭后仍占带宽/解码资源
   lightboxImg.src = "";
   document.body.style.overflow = "";
   currentIndex = -1;
@@ -110,32 +97,46 @@ lightboxClose.addEventListener("click", closeLightbox);
 window.addEventListener("keydown", (e) => {
   if (!isLightboxOpen()) return;
 
-  if (e.key === "Escape") return closeLightbox();
-  if (e.key === "ArrowRight") { e.preventDefault(); return showNext(); }
-  if (e.key === "ArrowLeft")  { e.preventDefault(); return showPrev(); }
+  if (e.key === "Escape") {
+    closeLightbox();
+    return;
+  }
+  if (e.key === "ArrowRight") {
+    e.preventDefault();
+    showNext();
+    return;
+  }
+  if (e.key === "ArrowLeft") {
+    e.preventDefault();
+    showPrev();
+    return;
+  }
 });
-
 
 /* ===== Hover polish: cursor-aware shadow + subtle highlight ===== */
 function attachHoverPolish() {
   const cards = document.querySelectorAll(".photo");
 
   cards.forEach((card) => {
+    // 鼠标在卡片内移动：更新高光中心 + 阴影方向
     card.addEventListener("mousemove", (e) => {
       const r = card.getBoundingClientRect();
-      const px = (e.clientX - r.left) / r.width;
-      const py = (e.clientY - r.top) / r.height;
+      const px = (e.clientX - r.left) / r.width;  // 0..1
+      const py = (e.clientY - r.top) / r.height;  // 0..1
 
+      // 高光位置（百分比）
       card.style.setProperty("--mx", `${Math.round(px * 100)}%`);
       card.style.setProperty("--my", `${Math.round(py * 100)}%`);
 
-      const dx = (px - 0.5) * 24;
-      const dy = (py - 0.5) * 16;
+      // 阴影方向：以中心为 0，范围约 -12px..12px（很克制）
+      const dx = (px - 0.5) * 24;  // [-12, 12]
+      const dy = (py - 0.5) * 16;  // [-8, 8] 让垂直更“稳”
 
       card.style.setProperty("--sx", `${dx.toFixed(1)}px`);
       card.style.setProperty("--sy", `${(14 + dy).toFixed(1)}px`);
     });
 
+    // 离开卡片：回到默认中心与默认阴影
     card.addEventListener("mouseleave", () => {
       card.style.setProperty("--mx", `50%`);
       card.style.setProperty("--my", `35%`);
@@ -145,50 +146,21 @@ function attachHoverPolish() {
   });
 }
 
+// 你是动态 render 的，所以 render() 之后要调用一次
+attachHoverPolish();
 
-/* ---------- Upload (real) ---------- */
+// 如果你未来会重新 render（比如上传后刷新列表），记得 render 后再调一次 attachHoverPolish()
+
+
+
+/* ---------- Upload placeholder ---------- */
 const uploadBtn = document.getElementById("upload-btn");
 const dialog = document.getElementById("upload-dialog");
 const closeBtn = document.getElementById("close-dialog");
-const fileInput = document.getElementById("file-input");
-const descInput = document.getElementById("desc-input");
-const doUpload = document.getElementById("fake-upload"); // 你按钮 id 叫 fake-upload，我沿用
+const fakeUpload = document.getElementById("fake-upload");
 
 uploadBtn.onclick = () => dialog.showModal();
 closeBtn.onclick = () => dialog.close();
-
-doUpload.onclick = async () => {
-  const file = fileInput?.files?.[0];
-  const desc = (descInput?.value || "").trim(); // 目前后端可先忽略 desc
-
-  if (!file) return alert("请选择一张图片");
-  if (!file.type?.startsWith("image/")) return alert("只能上传图片文件");
-
-  doUpload.disabled = true;
-  doUpload.textContent = "上传中...";
-
-  try {
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("desc", desc);
-
-    const res = await fetch("/api/upload", { method: "POST", body: fd });
-    if (!res.ok) {
-      const t = await res.text().catch(() => "");
-      throw new Error(t || `上传失败: ${res.status}`);
-    }
-
-    // 清空输入并关闭
-    fileInput.value = "";
-    if (descInput) descInput.value = "";
-    dialog.close();
-
-    // ✅ 重新拉列表刷新瀑布流
-    await loadList();
-  } catch (e) {
-    alert(e.message || String(e));
-  } finally {
-    doUpload.disabled = false;
-    doUpload.textContent = "上传";
-  }
+fakeUpload.onclick = () => {
+  alert("上传逻辑还没接入：下一步接 Worker 生成 presigned PUT URL → 浏览器直传 R2。");
 };
