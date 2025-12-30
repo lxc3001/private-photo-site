@@ -30,7 +30,6 @@ export async function onRequestPost({ request, env }) {
 
   const form = await request.formData();
   const file = form.get("file");
-  const desc = String(form.get("desc") || "").slice(0, 500);
 
   if (!file || typeof file === "string") {
     return new Response("Missing file", { status: 400 });
@@ -51,7 +50,9 @@ export async function onRequestPost({ request, env }) {
 
   await env.PHOTO_BUCKET.put(key, file.stream(), {
     httpMetadata: { contentType: file.type },
-    customMetadata: { desc },
+    customMetadata: {
+    desc,   // ✅ 存描述
+    },
   });
 
   return new Response(JSON.stringify({ ok: true, key }), {
