@@ -1,6 +1,5 @@
 export async function onRequestGet({ env }) {
   const listed = await env.PHOTO_BUCKET.list({ limit: 1000 });
-
   const isImage = (k) => /\.(png|jpe?g|gif|webp|avif)$/i.test(k);
 
   const items = (listed.objects || [])
