@@ -42,7 +42,7 @@ export async function onRequestPost({ request, env }) {
   }
 
   // 可选：限制大小
-  const MAX = 20 * 1024 * 1024;
+  const MAX = 50 * 1024 * 1024;
   if (file.size > MAX) {
     return new Response("File too large", { status: 413 });
   }
