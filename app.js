@@ -49,7 +49,6 @@ loadList().catch(console.error);
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightbox-img");
 const lightboxCaption = document.getElementById("lightbox-caption");
-const lightboxClose = document.getElementById("lightbox-close");
 
 let currentIndex = -1;
 let lastMetaReqId = 0;
@@ -132,7 +131,6 @@ gallery.addEventListener("click", (e) => {
 lightbox.addEventListener("click", (e) => {
   if (e.target?.closest?.('[data-close="1"]')) closeLightbox();
 });
-lightboxClose.addEventListener("click", closeLightbox);
 
 // 键盘：Esc 关闭；左右切换
 window.addEventListener("keydown", (e) => {
