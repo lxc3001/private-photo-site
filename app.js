@@ -75,7 +75,9 @@ async function fetchDescription(key){
 }
 
 async function loadDescriptionForCurrent(){
-  if (!isLightboxOpen() || currentIndex < 0 || currentIndex >= PHOTOS.length) return;
+  // Note: openLightbox() calls setLightboxContent() before toggling aria-hidden,
+  // so we must not require the lightbox to already be open here.
+  if (currentIndex < 0 || currentIndex >= PHOTOS.length) return;
   const reqId = ++lastMetaReqId;
   const photo = PHOTOS[currentIndex];
 
