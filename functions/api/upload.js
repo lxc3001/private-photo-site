@@ -50,6 +50,9 @@ export async function onRequestPost({ request, env }) {
 
   await env.PHOTO_BUCKET.put(key, file.stream(), {
     httpMetadata: { contentType: file.type },
+    customMetadata: {
+    desc,   // ✅ 存描述
+    },
   });
 
   return new Response(JSON.stringify({ ok: true, key }), {
