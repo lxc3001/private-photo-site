@@ -137,6 +137,7 @@ const pageSubtitle = qs("page-subtitle");
 const eventTitleEl = qs("event-title");
 const eventMetaEl = qs("event-meta");
 const eventUploadBtn = qs("event-upload-btn");
+const deleteEventBtn = qs("delete-event-btn");
 
 const gallery = qs("gallery");
 const lightbox = qs("lightbox");
@@ -231,6 +232,32 @@ async function loadEvent(eventId) {
   renderGallery();
 }
 
+async function deleteEvent(eventId) {
+  const ok1 = window.confirm("确定要删除这个事件吗？这会删除事件下的所有照片（不可恢复）。");
+  if (!ok1) return;
+  const ok2 = window.confirm("再次确认：真的要彻底删除吗？");
+  if (!ok2) return;
+
+  deleteEventBtn.disabled = true;
+  const original = deleteEventBtn.textContent;
+  deleteEventBtn.textContent = "删除中...";
+
+  try {
+    await jsonFetch("/api/event-delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ eventId, force: true }),
+    });
+
+    window.location.href = "timeline.html";
+  } catch (e) {
+    alert(e.message || String(e));
+  } finally {
+    deleteEventBtn.disabled = false;
+    deleteEventBtn.textContent = original || "删除事件";
+  }
+}
+
 // Event upload
 const uploadDialog = qs("upload-dialog");
 const uploadClose = qs("upload-close");
@@ -299,6 +326,7 @@ doUpload.addEventListener("click", async () => {
     timelineView.style.display = "block";
     eventView.style.display = "none";
     eventUploadBtn.style.display = "none";
+    deleteEventBtn.style.display = "none";
     await loadEvents();
     return;
   }
@@ -308,6 +336,8 @@ doUpload.addEventListener("click", async () => {
   timelineView.style.display = "none";
   eventView.style.display = "block";
   eventUploadBtn.style.display = "inline-flex";
+  deleteEventBtn.style.display = "inline-flex";
+  deleteEventBtn.onclick = () => deleteEvent(eventId);
 
   await loadEvent(eventId);
 })();
