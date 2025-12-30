@@ -113,6 +113,45 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
+/* ===== Hover polish: cursor-aware shadow + subtle highlight ===== */
+function attachHoverPolish() {
+  const cards = document.querySelectorAll(".photo");
+
+  cards.forEach((card) => {
+    // 鼠标在卡片内移动：更新高光中心 + 阴影方向
+    card.addEventListener("mousemove", (e) => {
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width;  // 0..1
+      const py = (e.clientY - r.top) / r.height;  // 0..1
+
+      // 高光位置（百分比）
+      card.style.setProperty("--mx", `${Math.round(px * 100)}%`);
+      card.style.setProperty("--my", `${Math.round(py * 100)}%`);
+
+      // 阴影方向：以中心为 0，范围约 -12px..12px（很克制）
+      const dx = (px - 0.5) * 24;  // [-12, 12]
+      const dy = (py - 0.5) * 16;  // [-8, 8] 让垂直更“稳”
+
+      card.style.setProperty("--sx", `${dx.toFixed(1)}px`);
+      card.style.setProperty("--sy", `${(14 + dy).toFixed(1)}px`);
+    });
+
+    // 离开卡片：回到默认中心与默认阴影
+    card.addEventListener("mouseleave", () => {
+      card.style.setProperty("--mx", `50%`);
+      card.style.setProperty("--my", `35%`);
+      card.style.setProperty("--sx", `0px`);
+      card.style.setProperty("--sy", `14px`);
+    });
+  });
+}
+
+// 你是动态 render 的，所以 render() 之后要调用一次
+attachHoverPolish();
+
+// 如果你未来会重新 render（比如上传后刷新列表），记得 render 后再调一次 attachHoverPolish()
+
+
 
 /* ---------- Upload placeholder ---------- */
 const uploadBtn = document.getElementById("upload-btn");
