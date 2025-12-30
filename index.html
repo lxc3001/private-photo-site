@@ -30,6 +30,19 @@
     </section>
   </main>
 
+  <!-- Lightbox：点击放大（不跳转新页面） -->
+  <div id="lightbox" class="lightbox" aria-hidden="true">
+    <div class="lightbox-backdrop" data-close="1"></div>
+  
+    <div class="lightbox-panel" role="dialog" aria-modal="true">
+      <button class="lightbox-close" id="lightbox-close" aria-label="Close">✕</button>
+  
+      <img id="lightbox-img" alt="" />
+      <div class="lightbox-caption" id="lightbox-caption"></div>
+    </div>
+  </div>
+
+
   <!-- 上传弹窗（先占位，后续接上传 API） -->
   <dialog id="upload-dialog" class="dialog">
     <div class="dialog-head">
