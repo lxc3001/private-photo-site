@@ -4,12 +4,15 @@
   --text:#e9e9ea;
   --muted:#a8a8ad;
   --border:rgba(255,255,255,0.06);
-  --shadow1: 0 6px 18px rgba(0,0,0,0.45);
-  --shadow2: 0 2px 6px rgba(0,0,0,0.35);
-  --shadowH1: 0 14px 32px rgba(0,0,0,0.55);
-  --shadowH2: 0 6px 14px rgba(0,0,0,0.45);
   --r:14px;
+
+  /* 悬浮感更强：更明显的层次阴影 */
+  --shadow1: 0 10px 26px rgba(0,0,0,0.55);
+  --shadow2: 0 3px 10px rgba(0,0,0,0.42);
+  --shadowH1: 0 24px 70px rgba(0,0,0,0.68);
+  --shadowH2: 0 10px 26px rgba(0,0,0,0.55);
 }
+
 
 *{ box-sizing:border-box; }
 html,body{ height:100%; }
