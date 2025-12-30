@@ -30,6 +30,8 @@ export async function onRequestPost({ request, env }) {
 
   const form = await request.formData();
   const file = form.get("file");
+  const descRaw = form.get("desc");
+  const desc = typeof descRaw === "string" ? descRaw.trim() : "";
 
   if (!file || typeof file === "string") {
     return new Response("Missing file", { status: 400 });
@@ -50,6 +52,18 @@ export async function onRequestPost({ request, env }) {
 
   await env.PHOTO_BUCKET.put(key, file.stream(), {
     httpMetadata: { contentType: file.type },
+  });
+
+  // Store sidecar metadata for this image (description, etc.)
+  // Using a separate object keeps list fast and allows on-demand fetch.
+  const metaKey = `${key}.meta.json`;
+  const meta = {
+    desc,
+    updatedAt: new Date().toISOString(),
+  };
+
+  await env.PHOTO_BUCKET.put(metaKey, JSON.stringify(meta), {
+    httpMetadata: { contentType: "application/json; charset=utf-8" },
   });
 
   return new Response(JSON.stringify({ ok: true, key }), {

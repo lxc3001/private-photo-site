@@ -21,8 +21,7 @@ function imgUrl(key){
 function render() {
   gallery.innerHTML = PHOTOS.map((p, idx) => `
     <figure class="photo" data-idx="${idx}">
-      <img loading="lazy" src="${imgUrl(p.key)}" alt="${escapeHtml(p.desc)}" />
-      <figcaption>${escapeHtml(p.desc)}</figcaption>
+      <img loading="lazy" src="${imgUrl(p.key)}" alt="" />
     </figure>
   `).join("");
 
@@ -53,6 +52,7 @@ const lightboxCaption = document.getElementById("lightbox-caption");
 const lightboxClose = document.getElementById("lightbox-close");
 
 let currentIndex = -1;
+let lastMetaReqId = 0;
 
 function isLightboxOpen(){
   return lightbox.getAttribute("aria-hidden") === "false";
@@ -62,8 +62,34 @@ function setLightboxContent(idx){
   currentIndex = idx;
   const photo = PHOTOS[currentIndex];
   lightboxImg.src = imgUrl(photo.key);
-  lightboxImg.alt = photo.desc || "";
-  lightboxCaption.textContent = photo.desc || "";
+  lightboxImg.alt = "";
+  lightboxCaption.textContent = "";
+  loadDescriptionForCurrent();
+}
+
+async function fetchDescription(key){
+  const res = await fetch(`/api/meta?key=${encodeURIComponent(key)}`, { cache: "no-store" });
+  if (!res.ok) return "";
+  const data = await res.json().catch(() => null);
+  return typeof data?.desc === "string" ? data.desc : "";
+}
+
+async function loadDescriptionForCurrent(){
+  if (!isLightboxOpen() || currentIndex < 0 || currentIndex >= PHOTOS.length) return;
+  const reqId = ++lastMetaReqId;
+  const photo = PHOTOS[currentIndex];
+
+  // cached
+  if (typeof photo.desc === "string" && photo.desc.length > 0) {
+    lightboxCaption.textContent = photo.desc;
+    return;
+  }
+
+  const desc = await fetchDescription(photo.key);
+  if (reqId !== lastMetaReqId) return; // ignore stale response
+
+  photo.desc = desc;
+  lightboxCaption.textContent = desc;
 }
 
 function openLightbox(idx){
