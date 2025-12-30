@@ -38,7 +38,7 @@ async function loadList() {
   const items = data.items || [];
 
   // 你当前 list.js 只有 key，没有 desc，所以 desc 先留空
-  PPHOTOS = items.map((it) => ({ key: it.key, desc: it.desc || "" }));
+  PHOTOS = items.map((it) => ({ key: it.key, desc: it.desc || "" }));
   render();
 }
 
