@@ -32,25 +32,50 @@ function render() {
 }
 render();
 
-/* ---------- Lightbox logic ---------- */
+/* ---------- Lightbox logic (with prev/next + animation) ---------- */
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightbox-img");
 const lightboxCaption = document.getElementById("lightbox-caption");
 const lightboxClose = document.getElementById("lightbox-close");
 
-function openLightbox(photo){
+let currentIndex = -1;
+
+function isLightboxOpen(){
+  return lightbox.getAttribute("aria-hidden") === "false";
+}
+
+function setLightboxContent(idx){
+  currentIndex = idx;
+  const photo = PHOTOS[currentIndex];
   lightboxImg.src = imgUrl(photo.key);
   lightboxImg.alt = photo.desc || "";
   lightboxCaption.textContent = photo.desc || "";
+}
+
+function openLightbox(idx){
+  setLightboxContent(idx);
   lightbox.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
 }
 
 function closeLightbox(){
   lightbox.setAttribute("aria-hidden", "true");
-  // 避免大图还在加载时占资源：可选清空
+  // 可选：清空 src，避免关闭后仍占带宽/解码资源
   lightboxImg.src = "";
   document.body.style.overflow = "";
+  currentIndex = -1;
+}
+
+function showNext(){
+  if (!isLightboxOpen() || PHOTOS.length === 0) return;
+  const next = (currentIndex + 1) % PHOTOS.length;
+  setLightboxContent(next);
+}
+
+function showPrev(){
+  if (!isLightboxOpen() || PHOTOS.length === 0) return;
+  const prev = (currentIndex - 1 + PHOTOS.length) % PHOTOS.length;
+  setLightboxContent(prev);
 }
 
 // 点击卡片打开
@@ -58,9 +83,8 @@ gallery.addEventListener("click", (e) => {
   const card = e.target.closest(".photo");
   if (!card) return;
   const idx = Number(card.dataset.idx);
-  const photo = PHOTOS[idx];
-  if (!photo) return;
-  openLightbox(photo);
+  if (Number.isNaN(idx)) return;
+  openLightbox(idx);
 });
 
 // 关闭：点背景或点 X
@@ -69,12 +93,26 @@ lightbox.addEventListener("click", (e) => {
 });
 lightboxClose.addEventListener("click", closeLightbox);
 
-// 关闭：Esc
+// 键盘：Esc 关闭；左右切换
 window.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && lightbox.getAttribute("aria-hidden") === "false") {
+  if (!isLightboxOpen()) return;
+
+  if (e.key === "Escape") {
     closeLightbox();
+    return;
+  }
+  if (e.key === "ArrowRight") {
+    e.preventDefault();
+    showNext();
+    return;
+  }
+  if (e.key === "ArrowLeft") {
+    e.preventDefault();
+    showPrev();
+    return;
   }
 });
+
 
 /* ---------- Upload placeholder ---------- */
 const uploadBtn = document.getElementById("upload-btn");
