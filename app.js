@@ -35,10 +35,10 @@ async function loadList() {
   const res = await fetch("/api/list", { cache: "no-store" });
   if (!res.ok) throw new Error(`list failed: ${res.status}`);
   const data = await res.json();
-  const keys = data.keys || [];
+  const items = data.items || [];
 
   // 你当前 list.js 只有 key，没有 desc，所以 desc 先留空
-  PHOTOS = keys.map((k) => ({ key: k, desc: "" }));
+  PPHOTOS = items.map((it) => ({ key: it.key, desc: it.desc || "" }));
   render();
 }
 
