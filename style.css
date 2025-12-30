@@ -26,39 +26,46 @@ body{
   color:var(--text);
 }
 
-/* Timeline page: animated glow orbs background */
+/* Timeline page: firefly background dots */
 .timeline-page{
   position: relative;
 }
-.timeline-page .bg-orbs{
+.timeline-page .bg-fireflies{
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
 }
-.timeline-page .bg-orbs span{
+.timeline-page .bg-fireflies span{
   position: absolute;
   left: var(--x);
   top: var(--y);
   width: var(--s);
   height: var(--s);
   border-radius: 999px;
-  transform: translate(-50%, -50%);
+  transform: translate3d(0,0,0);
   opacity: var(--o);
-  background:
-    radial-gradient(circle at 35% 30%, rgba(255,255,255,0.16), rgba(255,255,255,0.06) 35%, rgba(255,255,255,0.00) 68%);
-  filter: blur(0.2px);
-  animation: orbDrift var(--d) ease-in-out infinite alternate, orbPulse calc(var(--d) * 0.6) ease-in-out infinite;
+  background: rgba(255,255,255,0.85);
+  box-shadow:
+    0 0 var(--b) rgba(255,255,255,0.18),
+    0 0 calc(var(--b) * 1.8) rgba(255,255,255,0.10);
+  animation:
+    fireflyMove var(--move) ease-in-out infinite alternate,
+    fireflyFlicker var(--flicker) ease-in-out infinite;
+  animation-delay: var(--delay);
   will-change: transform, opacity;
 }
-@keyframes orbDrift{
-  0%{ transform: translate(-50%, -50%) translate3d(-14px, 10px, 0); }
-  100%{ transform: translate(-50%, -50%) translate3d(16px, -12px, 0); }
+
+@keyframes fireflyMove{
+  0%{ transform: translate3d(0,0,0); }
+  100%{ transform: translate3d(var(--dx), var(--dy), 0); }
 }
-@keyframes orbPulse{
+
+@keyframes fireflyFlicker{
   0%,100%{ opacity: var(--o); }
-  50%{ opacity: calc(var(--o) + 0.06); }
+  35%{ opacity: calc(var(--o) + 0.18); }
+  70%{ opacity: calc(var(--o) - 0.10); }
 }
 
 .timeline-page .topbar,
@@ -217,7 +224,7 @@ body{
 }
 
 @media (prefers-reduced-motion: reduce){
-  .timeline-page .bg-orbs span,
+  .timeline-page .bg-fireflies span,
   .rail-flow,
   .rail-pulse{
     animation: none !important;

@@ -416,6 +416,7 @@ doUpload.addEventListener("click", async () => {
 
 /* -------------------- Bootstrap -------------------- */
 (async function init() {
+  initFireflies();
   const eventId = getEventIdFromUrl();
 
   if (!eventId) {
@@ -439,3 +440,47 @@ doUpload.addEventListener("click", async () => {
 
   await loadEvent(eventId);
 })();
+
+function initFireflies() {
+  const root = document.querySelector(".bg-fireflies");
+  if (!root) return;
+
+  // Keep a stable-ish look across reloads while still feeling random
+  const count = 26;
+  root.innerHTML = "";
+
+  for (let i = 0; i < count; i++) {
+    const dot = document.createElement("span");
+
+    // Base position
+    const x = Math.random() * 100;
+    const y = Math.random() * 100;
+
+    // Small drift range to feel like fireflies, not big orbs
+    const dx = (Math.random() * 2 - 1) * (20 + Math.random() * 40); // px
+    const dy = (Math.random() * 2 - 1) * (16 + Math.random() * 36); // px
+
+    // Size in px
+    const s = 2 + Math.random() * 3.2;
+    const blur = 6 + Math.random() * 14;
+    const o = 0.18 + Math.random() * 0.32;
+
+    // Timing
+    const move = 6 + Math.random() * 10; // seconds
+    const flicker = 1.8 + Math.random() * 2.8;
+    const delay = -(Math.random() * 12);
+
+    dot.style.setProperty("--x", `${x}%`);
+    dot.style.setProperty("--y", `${y}%`);
+    dot.style.setProperty("--dx", `${dx.toFixed(1)}px`);
+    dot.style.setProperty("--dy", `${dy.toFixed(1)}px`);
+    dot.style.setProperty("--s", `${s.toFixed(1)}px`);
+    dot.style.setProperty("--b", `${blur.toFixed(1)}px`);
+    dot.style.setProperty("--o", `${o.toFixed(2)}`);
+    dot.style.setProperty("--move", `${move.toFixed(2)}s`);
+    dot.style.setProperty("--flicker", `${flicker.toFixed(2)}s`);
+    dot.style.setProperty("--delay", `${delay.toFixed(2)}s`);
+
+    root.appendChild(dot);
+  }
+}
