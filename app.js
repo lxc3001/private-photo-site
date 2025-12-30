@@ -155,8 +155,8 @@ function attachHoverPolish() {
       card.style.setProperty("--mx", `${Math.round(px * 100)}%`);
       card.style.setProperty("--my", `${Math.round(py * 100)}%`);
 
-      const dx = (px - 0.5) * 24;
-      const dy = (py - 0.5) * 16;
+      const dx = (px - 0.5) * 30;
+      const dy = (py - 0.5) * 20;
 
       card.style.setProperty("--sx", `${dx.toFixed(1)}px`);
       card.style.setProperty("--sy", `${(14 + dy).toFixed(1)}px`);

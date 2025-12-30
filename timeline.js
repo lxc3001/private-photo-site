@@ -446,7 +446,7 @@ function initFireflies() {
   if (!root) return;
 
   // Keep a stable-ish look across reloads while still feeling random
-  const count = 26;
+  const count = 40;
   root.innerHTML = "";
 
   for (let i = 0; i < count; i++) {
