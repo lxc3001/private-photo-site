@@ -1,0 +1,219 @@
+:root{
+  --bg:#0f0f10;
+  --card:#161617;
+  --text:#e9e9ea;
+  --muted:#a8a8ad;
+  --border:rgba(255,255,255,0.06);
+  --shadow1: 0 6px 18px rgba(0,0,0,0.45);
+  --shadow2: 0 2px 6px rgba(0,0,0,0.35);
+  --shadowH1: 0 14px 32px rgba(0,0,0,0.55);
+  --shadowH2: 0 6px 14px rgba(0,0,0,0.45);
+  --r:14px;
+}
+
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background:
+    radial-gradient(1200px 500px at 20% -10%, rgba(255,255,255,0.06), transparent 60%),
+    radial-gradient(900px 600px at 90% 0%, rgba(255,255,255,0.04), transparent 55%),
+    var(--bg);
+  color:var(--text);
+}
+
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:20;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:16px 20px;
+  border-bottom:1px solid var(--border);
+  background: rgba(15,15,16,0.72);
+  backdrop-filter: blur(10px);
+}
+
+.brand{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+.dot{
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  background: rgba(255,255,255,0.65);
+  box-shadow: 0 0 0 6px rgba(255,255,255,0.06);
+}
+.title{
+  font-weight:700;
+  letter-spacing:0.2px;
+}
+.subtitle{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:2px;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.btn{
+  background: rgba(255,255,255,0.06);
+  color:var(--text);
+  border:1px solid rgba(255,255,255,0.10);
+  padding:9px 12px;
+  border-radius:10px;
+  cursor:pointer;
+  transition: transform .18s ease, background .18s ease, border-color .18s ease;
+}
+.btn:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,0.09);
+  border-color: rgba(255,255,255,0.14);
+}
+.btn.primary{
+  background: rgba(255,255,255,0.14);
+  border-color: rgba(255,255,255,0.18);
+}
+.btn.primary:hover{
+  background: rgba(255,255,255,0.18);
+}
+
+.wrap{
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* 🌊 瀑布流：CSS columns */
+.gallery{
+  column-count: 4;
+  column-gap: 16px;
+}
+@media (max-width: 1200px){ .gallery{ column-count:3; } }
+@media (max-width: 850px){ .gallery{ column-count:2; } }
+@media (max-width: 520px){ .gallery{ column-count:1; } }
+
+/* 卡片：圆角 + 悬浮阴影 */
+.photo{
+  break-inside: avoid;
+  margin: 0 0 18px;
+  background: var(--card);
+  border-radius: var(--r);
+  overflow: hidden;
+
+  /* 悬浮感：阴影 + 轻描边 */
+  box-shadow: var(--shadow1), var(--shadow2);
+  outline: 1px solid rgba(255,255,255,0.04);
+  outline-offset: -1px;
+
+  /* hover 不改变布局 */
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transform-origin: center;
+  will-change: transform;
+  position: relative;
+}
+
+/* 👆 hover：抬升 + 放大 + 阴影增强 */
+.photo:hover{
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: var(--shadowH1), var(--shadowH2);
+  z-index: 2;
+}
+
+/* 图片：上半部分圆角，避免边缘突兀 */
+.photo img{
+  width:100%;
+  display:block;
+  border-radius: var(--r) var(--r) 0 0;
+}
+
+/* 描述区：预留位置 */
+.photo figcaption{
+  padding: 12px 14px;
+  font-size: 14px;
+  color: var(--muted);
+  background: linear-gradient(
+    to bottom,
+    rgba(22,22,23,0.85),
+    rgba(22,22,23,1)
+  );
+}
+
+/* 让没描述时也不难看 */
+.photo figcaption:empty{
+  display:none;
+}
+
+/* 弹窗 */
+.dialog{
+  width:min(520px, 92vw);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:16px;
+  padding:0;
+  background: rgba(20,20,22,0.92);
+  color:var(--text);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+}
+.dialog::backdrop{
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(2px);
+}
+.dialog-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 16px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+.dialog-title{
+  font-weight:650;
+}
+.icon-btn{
+  border:none;
+  background: transparent;
+  color: var(--text);
+  cursor:pointer;
+  font-size: 16px;
+  opacity: .85;
+}
+.icon-btn:hover{ opacity: 1; }
+
+.dialog-body{
+  padding: 14px 16px 16px;
+}
+.muted{ color: var(--muted); font-size: 13px; margin: 0 0 12px; }
+
+.field{
+  display:block;
+  margin: 10px 0;
+}
+.field span{
+  display:block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+input[type="file"], textarea{
+  width:100%;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+  padding: 10px 12px;
+  outline: none;
+}
+textarea{ resize: vertical; min-height: 80px; }
+
+.dialog-actions{
+  display:flex;
+  justify-content:flex-end;
+  margin-top: 12px;
+}
