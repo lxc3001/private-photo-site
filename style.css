@@ -149,9 +149,10 @@ body{
 }
 .timeline-rail{
   position: absolute;
-  left: 0;
+  left: 50%;
+  transform: translateX(-50%);
   top: 0;
-  width: 110px;
+  width: 260px;
   height: 100%;
   pointer-events: none;
   z-index: 0;
@@ -165,8 +166,16 @@ body{
 }
 .timeline-item{
   display: grid;
-  grid-template-columns: 110px 1fr;
+  grid-template-columns: 1fr 180px 1fr;
   align-items: start;
+  column-gap: 14px;
+}
+.timeline-side{
+  min-width: 0;
+}
+.timeline-center{
+  position: relative;
+  min-height: 1px;
 }
 .timeline-marker{
   width: 14px;
@@ -174,6 +183,8 @@ body{
   border-radius: 999px;
   margin-top: 26px;
   justify-self: center;
+  margin-left: auto;
+  margin-right: auto;
   background: rgba(255,255,255,0.72);
   box-shadow:
     0 0 0 6px rgba(255,255,255,0.05),
@@ -181,26 +192,83 @@ body{
   border: 1px solid rgba(255,255,255,0.18);
 }
 
+.timeline-item.is-left .timeline-marker{
+  transform: translateX(-44px);
+}
+.timeline-item.is-right .timeline-marker{
+  transform: translateX(44px);
+}
+
+.timeline-item.is-left .timeline-side.left{
+  display: flex;
+  justify-content: flex-end;
+}
+.timeline-item.is-right .timeline-side.right{
+  display: flex;
+  justify-content: flex-start;
+}
+
+/* Limit card width so the composition breathes */
+.timeline-page .event-card{
+  max-width: 520px;
+  width: 100%;
+}
+
+@media (max-width: 900px){
+  .timeline-item{
+    grid-template-columns: 140px 1fr;
+  }
+  .timeline-rail{
+    left: 0;
+    transform: none;
+    width: 220px;
+  }
+  .timeline-center{ display: block; }
+  .timeline-side.left{ display: none; }
+  .timeline-item.is-right .timeline-side.right,
+  .timeline-item.is-left .timeline-side.right{
+    display: block;
+  }
+  .timeline-item.is-left .timeline-marker,
+  .timeline-item.is-right .timeline-marker{
+    transform: none;
+  }
+}
+
 /* Root-like glowing rail SVG */
 .rail-svg{ display:block; }
 .rail-base{
   stroke: rgba(255,255,255,0.06);
-  stroke-width: 22;
+  stroke-width: 30;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 .rail-mid{
   stroke: rgba(255,255,255,0.10);
-  stroke-width: 14;
+  stroke-width: 18;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 .rail-glow{
   stroke: rgba(255,255,255,0.14);
-  stroke-width: 8;
+  stroke-width: 10;
   stroke-linecap: round;
   stroke-linejoin: round;
   opacity: .9;
+}
+.rail-vein{
+  stroke: rgba(255,255,255,0.12);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: .7;
+  stroke-dasharray: 8 180;
+}
+.rail-vein1{ animation: railVein 2.8s linear infinite; }
+.rail-vein2{ animation: railVein 3.7s linear infinite reverse; opacity: .55; }
+
+.rail-flow{
+  stroke-dasharray: 64 280;
 }
 .rail-flow{
   stroke: rgba(255,255,255,0.26);
@@ -219,14 +287,21 @@ body{
   100%{ stroke-dashoffset: -280; }
 }
 @keyframes railPulse{
-  0%,100%{ stroke-width: 13; opacity: .92; }
-  50%{ stroke-width: 16; opacity: .98; }
+  0%,100%{ stroke-width: 17; opacity: .92; }
+  50%{ stroke-width: 22; opacity: .98; }
+}
+
+@keyframes railVein{
+  0%{ stroke-dashoffset: 0; }
+  100%{ stroke-dashoffset: -220; }
 }
 
 @media (prefers-reduced-motion: reduce){
   .timeline-page .bg-fireflies span,
   .rail-flow,
-  .rail-pulse{
+  .rail-pulse,
+  .rail-vein1,
+  .rail-vein2{
     animation: none !important;
   }
 }

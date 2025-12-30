@@ -52,7 +52,8 @@ async function loadEvents() {
   }
   emptyEl.style.display = "none";
 
-  eventsEl.innerHTML = events.map((e) => {
+  eventsEl.innerHTML = events.map((e, idx) => {
+    const side = idx % 2 === 0 ? "right" : "left";
     const cover = e.coverKey
       ? `<img class="event-cover" loading="lazy" src="${imgUrl(e.coverKey)}" alt="" />`
       : `<div class="event-cover placeholder"></div>`;
@@ -63,22 +64,41 @@ async function loadEvents() {
 
     const note = e.note ? `<div class="event-note">${escapeHtml(e.note)}</div>` : "";
 
+    const card = `
+      <a class="event-card" href="timeline.html?eventId=${encodeURIComponent(e.eventId)}">
+        ${cover}
+        <div class="event-info">
+          <div class="event-card-title">${escapeHtml(e.title || e.eventId)}</div>
+          <div class="event-card-meta">${escapeHtml(meta)}</div>
+          ${note}
+        </div>
+      </a>
+    `;
+
     return `
-      <div class="timeline-item">
-        <div class="timeline-marker" aria-hidden="true"></div>
-        <a class="event-card" href="timeline.html?eventId=${encodeURIComponent(e.eventId)}">
-          ${cover}
-          <div class="event-info">
-            <div class="event-card-title">${escapeHtml(e.title || e.eventId)}</div>
-            <div class="event-card-meta">${escapeHtml(meta)}</div>
-            ${note}
-          </div>
-        </a>
+      <div class="timeline-item is-${side}">
+        <div class="timeline-side left">${side === "left" ? card : ""}</div>
+        <div class="timeline-center">
+          <div class="timeline-marker" aria-hidden="true"></div>
+        </div>
+        <div class="timeline-side right">${side === "right" ? card : ""}</div>
       </div>
     `;
   }).join("");
 
   updateTimelineRail();
+
+  // Images can change layout height after load; re-sync the rail.
+  eventsEl.querySelectorAll("img").forEach((img) => {
+    img.addEventListener("load", () => updateTimelineRail(), { once: true });
+  });
+}
+
+function warpPoints(points, phase, amp) {
+  return points.map((p) => ({
+    x: p.x + Math.sin((p.y / 90) + phase) * amp,
+    y: p.y,
+  }));
 }
 
 function catmullRomToBezier(points) {
@@ -114,16 +134,19 @@ function updateTimelineRail() {
 
   if (railRaf) cancelAnimationFrame(railRaf);
   railRaf = requestAnimationFrame(() => {
-    const height = Math.max(220, eventsEl.scrollHeight);
-    const width = 110;
+    const stageRect = stage.getBoundingClientRect();
+    const height = Math.max(260, stage.scrollHeight);
+    const width = 260;
     rail.style.height = `${height}px`;
+
+    // rail is centered via CSS; measure its box for x coords
+    const railRect = rail.getBoundingClientRect();
 
     const markers = Array.from(document.querySelectorAll(".timeline-marker"));
     const points = markers.map((m) => {
       const r = m.getBoundingClientRect();
-      const s = stage.getBoundingClientRect();
-      const x = 56 + Math.sin((r.top - s.top) / 140) * 12;
-      const y = (r.top - s.top) + r.height / 2;
+      const x = (r.left - railRect.left) + r.width / 2;
+      const y = (r.top - stageRect.top) + r.height / 2;
       return { x, y };
     }).filter((p) => Number.isFinite(p.y));
 
@@ -133,7 +156,7 @@ function updateTimelineRail() {
       const spacing = Math.max(120, Math.floor(height / n));
       const p = [];
       for (let i = 0; i < n; i++) {
-        p.push({ x: 56 + Math.sin(i * 0.9) * 14, y: 40 + i * spacing });
+        p.push({ x: width / 2 + Math.sin(i * 0.9) * 46, y: 40 + i * spacing });
       }
       points.length = 0;
       points.push(...p);
@@ -149,6 +172,8 @@ function updateTimelineRail() {
     ];
 
     const d = catmullRomToBezier(padded);
+    const d2 = catmullRomToBezier(warpPoints(padded, 1.2, 7));
+    const d3 = catmullRomToBezier(warpPoints(padded, 3.1, 11));
 
     rail.innerHTML = `
       <svg class="rail-svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
@@ -166,6 +191,10 @@ function updateTimelineRail() {
         <path class="rail-base" d="${d}" fill="none" />
         <path class="rail-mid rail-pulse" d="${d}" fill="none" />
         <path class="rail-glow" d="${d}" fill="none" filter="url(#railGlow)" />
+
+        <path class="rail-vein rail-vein1" d="${d2}" fill="none" />
+        <path class="rail-vein rail-vein2" d="${d3}" fill="none" />
+
         <path class="rail-flow" d="${d}" fill="none" />
       </svg>
     `;
