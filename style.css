@@ -316,3 +316,57 @@ textarea{ resize: vertical; min-height: 80px; }
     transition: none !important;
   }
 }
+
+/* ===== Hover polish: cursor-aware shadow + subtle highlight ===== */
+.photo{
+  position: relative;
+  --mx: 50%;
+  --my: 35%;
+  --sx: 0px;   /* shadow x offset (set by JS) */
+  --sy: 14px;  /* shadow y offset (set by JS) */
+
+  /* 让 transform 更“丝滑”一点 */
+  transition: transform .22s ease, box-shadow .22s ease;
+}
+
+/* 卡片高光层：跟随鼠标位置 */
+.photo::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:0;
+  transition: opacity .22s ease;
+
+  /* 高光：中心由 --mx/--my 控制 */
+  background:
+    radial-gradient(
+      520px 360px at var(--mx) var(--my),
+      rgba(255,255,255,0.16),
+      rgba(255,255,255,0.06) 35%,
+      rgba(255,255,255,0.00) 70%
+    );
+}
+
+/* hover：中心浮起（不沿上部），阴影更强 + 带方向 */
+.photo:hover{
+  transform: scale(1.045);
+  z-index: 2;
+
+  /* 阴影方向（由 --sx/--sy 控制），比原来更“立体” */
+  box-shadow:
+    var(--sx) var(--sy) 46px rgba(0,0,0,0.62),
+    calc(var(--sx) * 0.6) calc(var(--sy) * 0.6) 16px rgba(0,0,0,0.48);
+}
+
+.photo:hover::before{
+  opacity: 1;
+}
+
+/* 减少动画偏好 */
+@media (prefers-reduced-motion: reduce){
+  .photo, .photo::before{
+    transition: none !important;
+  }
+}
+
