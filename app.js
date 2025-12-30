@@ -186,24 +186,31 @@ uploadBtn.onclick = () => dialog.showModal();
 closeBtn.onclick = () => dialog.close();
 
 doUpload.onclick = async () => {
-  const file = fileInput?.files?.[0];
-  const desc = (descInput?.value || "").trim(); // 目前后端可先忽略 desc
+  const files = Array.from(fileInput?.files || []);
+  const desc = (descInput?.value || "").trim(); // 批量上传时：该描述会应用到本次所有图片
 
-  if (!file) return alert("请选择一张图片");
-  if (!file.type?.startsWith("image/")) return alert("只能上传图片文件");
+  if (files.length === 0) return alert("请选择图片");
+  if (files.some((f) => !f.type?.startsWith("image/"))) {
+    return alert("只能上传图片文件");
+  }
 
   doUpload.disabled = true;
-  doUpload.textContent = "上传中...";
+  const originalBtnText = doUpload.textContent;
 
   try {
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("desc", desc);
+    for (let i = 0; i < files.length; i++) {
+      doUpload.textContent = `上传中... (${i + 1}/${files.length})`;
 
-    const res = await fetch("/api/upload", { method: "POST", body: fd });
-    if (!res.ok) {
-      const t = await res.text().catch(() => "");
-      throw new Error(t || `上传失败: ${res.status}`);
+      const fd = new FormData();
+      fd.append("file", files[i]);
+      fd.append("desc", desc);
+
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      if (!res.ok) {
+        const t = await res.text().catch(() => "");
+        const name = files[i]?.name ? `\n文件：${files[i].name}` : "";
+        throw new Error((t || `上传失败: ${res.status}`) + name);
+      }
     }
 
     // 清空输入并关闭
@@ -217,6 +224,6 @@ doUpload.onclick = async () => {
     alert(e.message || String(e));
   } finally {
     doUpload.disabled = false;
-    doUpload.textContent = "上传";
+    doUpload.textContent = originalBtnText || "上传";
   }
 };
