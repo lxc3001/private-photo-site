@@ -119,14 +119,15 @@ body{
 
   /* hover 不改变布局 */
   transition: transform 0.25s ease, box-shadow 0.25s ease;
-  transform-origin: center;
+  transform-origin: center center;
   will-change: transform;
   position: relative;
+  
 }
 
 /* 👆 hover：抬升 + 放大 + 阴影增强 */
-.photo:hover{
-  transform: translateY(-7px) scale(1.04);
+.photo:hover {
+  transform: scale(1.045);
   box-shadow: var(--shadowH1), var(--shadowH2);
   z-index: 2;
 }
