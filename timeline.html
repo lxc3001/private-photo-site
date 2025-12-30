@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Timeline</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="dot"></div>
+      <div>
+        <div class="title" id="page-title">Timeline</div>
+        <div class="subtitle" id="page-subtitle">按事件管理照片</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <a class="btn" href="index.html">全部照片</a>
+      <button id="new-event-btn" class="btn primary">＋ 新建事件</button>
+      <button id="event-upload-btn" class="btn" style="display:none">＋ 上传到此事件</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- List view -->
+    <section id="timeline-view" class="timeline" aria-label="Timeline">
+      <div id="events" class="event-list"></div>
+      <div id="events-empty" class="muted" style="display:none">还没有事件，点右上角“新建事件”。</div>
+    </section>
+
+    <!-- Event gallery view -->
+    <section id="event-view" style="display:none">
+      <div class="event-head">
+        <a class="btn" href="timeline.html">← 返回时间线</a>
+        <div class="event-head-text">
+          <div class="event-title" id="event-title"></div>
+          <div class="event-meta" id="event-meta"></div>
+        </div>
+      </div>
+
+      <section id="gallery" class="gallery" aria-label="Event photo gallery"></section>
+    </section>
+  </main>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox" aria-hidden="true">
+    <div class="lightbox-backdrop" data-close="1"></div>
+
+    <div class="lightbox-panel" role="dialog" aria-modal="true">
+      <div class="lightbox-content">
+        <div class="lightbox-media">
+          <img id="lightbox-img" alt="" />
+        </div>
+
+        <aside class="lightbox-side" aria-label="Description">
+          <div class="lightbox-side-inner">
+            <div class="lightbox-side-title">描述</div>
+            <div class="lightbox-caption" id="lightbox-caption"></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create event dialog -->
+  <dialog id="create-dialog" class="dialog">
+    <div class="dialog-head">
+      <div class="dialog-title">新建事件</div>
+      <button id="create-close" class="icon-btn" aria-label="Close">✕</button>
+    </div>
+
+    <div class="dialog-body">
+      <label class="field">
+        <span>标题</span>
+        <input id="create-title" type="text" placeholder="例如：Christmas 2025" />
+      </label>
+
+      <label class="field">
+        <span>日期（YYYY-MM-DD）</span>
+        <input id="create-date" type="date" />
+      </label>
+
+      <label class="field">
+        <span>备注（可选）</span>
+        <textarea id="create-note" rows="3" placeholder="一句话记录这个事件..."></textarea>
+      </label>
+
+      <div class="dialog-actions">
+        <button id="create-submit" class="btn primary">创建</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Event upload dialog -->
+  <dialog id="upload-dialog" class="dialog">
+    <div class="dialog-head">
+      <div class="dialog-title">上传到事件</div>
+      <button id="upload-close" class="icon-btn" aria-label="Close">✕</button>
+    </div>
+
+    <div class="dialog-body">
+      <label class="field">
+        <span>选择图片（可多选，最多30张）</span>
+        <input id="file-input" type="file" accept="image/*" multiple />
+      </label>
+
+      <label class="field">
+        <span>描述（可选，应用到本次所有图片）</span>
+        <textarea id="desc-input" rows="3" placeholder="给这批照片写一句话..."></textarea>
+      </label>
+
+      <div class="dialog-actions">
+        <button id="do-upload" class="btn primary">上传</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="timeline.js"></script>
+</body>
+</html>
