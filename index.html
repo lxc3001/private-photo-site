@@ -1,59 +1,63 @@
 <!doctype html>
 <html lang="zh">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Private Photos</title>
-    <style>
-      body { font-family: system-ui, sans-serif; margin: 24px; }
-      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
-      .card { display: flex; flex-direction: column; gap: 6px; }
-      img { width: 100%; height: 220px; object-fit: cover; border-radius: 12px; background: #111; }
-      .cap { color: #666; font-size: 12px; word-break: break-all; }
-    </style>
-  </head>
-  <body>
-    <h2>Private Photos</h2>
-    <div id="status">Loading...</div>
-    <div class="grid" id="grid"></div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Private Gallery</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
 
-    <script>
-      async function main() {
-        const status = document.getElementById("status");
-        const grid = document.getElementById("grid");
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="dot"></div>
+      <div>
+        <div class="title">My Private Gallery</div>
+        <div class="subtitle">Only approved people can access</div>
+      </div>
+    </div>
 
-        const res = await fetch("/api/list");
-        if (!res.ok) {
-          status.textContent = "Failed to load list: " + res.status;
-          return;
-        }
+    <div class="actions">
+      <button id="upload-btn" class="btn">
+        ＋ 上传图片
+      </button>
+    </div>
+  </header>
 
-        const { keys } = await res.json();
-        status.textContent = keys.length ? `Loaded ${keys.length} photos` : "No photos yet";
+  <main class="wrap">
+    <section id="gallery" class="gallery" aria-label="Photo gallery">
+      <!-- app.js 会把图片卡片插进来 -->
+    </section>
+  </main>
 
-        for (const key of keys) {
-          const card = document.createElement("div");
-          card.className = "card";
+  <!-- 上传弹窗（先占位，后续接上传 API） -->
+  <dialog id="upload-dialog" class="dialog">
+    <div class="dialog-head">
+      <div class="dialog-title">上传图片（占位）</div>
+      <button id="close-dialog" class="icon-btn" aria-label="Close">✕</button>
+    </div>
 
-          const img = document.createElement("img");
-          img.loading = "lazy";
-          img.src = `/api/img?key=${encodeURIComponent(key)}`;
+    <div class="dialog-body">
+      <p class="muted">
+        这里之后会接 Worker：生成 presigned PUT URL → 浏览器直传 R2。
+      </p>
 
-          const cap = document.createElement("div");
-          cap.className = "cap";
-          cap.textContent = key;
+      <label class="field">
+        <span>选择图片</span>
+        <input id="file-input" type="file" accept="image/*" />
+      </label>
 
-          card.appendChild(img);
-          card.appendChild(cap);
-          grid.appendChild(card);
-        }
-      }
+      <label class="field">
+        <span>描述（可选）</span>
+        <textarea id="desc-input" rows="3" placeholder="给这张图片写一句话..."></textarea>
+      </label>
 
-      main().catch((e) => {
-        document.getElementById("status").textContent = "Error: " + e.message;
-      });
-    </script>
-  </body>
+      <div class="dialog-actions">
+        <button id="fake-upload" class="btn primary">上传（暂未接入）</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
 </html>
-
-
