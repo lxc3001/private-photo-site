@@ -35,10 +35,20 @@ async function loadList() {
   const res = await fetch("/api/list", { cache: "no-store" });
   if (!res.ok) throw new Error(`list failed: ${res.status}`);
   const data = await res.json();
-  const items = data.items || [];
 
-  // 你当前 list.js 只有 key，没有 desc，所以 desc 先留空
-  PHOTOS = items.map((it) => ({ key: it.key, desc: it.desc || "" }));
+  const keys = data.keys || [];
+
+  // 逐个补齐 desc（并发请求）
+  const metas = await Promise.all(
+    keys.map(async (k) => {
+      const r = await fetch(`/api/meta?key=${encodeURIComponent(k)}`, { cache: "no-store" });
+      if (!r.ok) return { key: k, desc: "" };
+      const m = await r.json();
+      return { key: k, desc: m.desc || "" };
+    })
+  );
+
+  PHOTOS = metas;
   render();
 }
 
