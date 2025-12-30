@@ -282,6 +282,19 @@ textarea{ resize: vertical; min-height: 80px; }
   overflow: auto;
 }
 
+.lightbox-side-inner{
+  padding: 14px 14px 16px;
+}
+
+.lightbox-side-title{
+  font-size: 12px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: .9;
+  margin: 2px 0 10px;
+}
+
 @media (max-width: 900px){
   .lightbox-content{ flex-direction: column; }
   .lightbox-side{
@@ -292,9 +305,18 @@ textarea{ resize: vertical; min-height: 80px; }
 }
 
 .lightbox-caption{
-  padding: 12px 14px;
-  color: var(--muted);
+  color: var(--text);
   font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  opacity: .92;
+}
+
+.lightbox-caption:empty::before{
+  content: "暂无描述";
+  color: var(--muted);
+  opacity: .9;
 }
 
 .lightbox-close{
