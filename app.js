@@ -130,7 +130,7 @@ gallery.addEventListener("click", (e) => {
 
 // 关闭：点背景或点 X
 lightbox.addEventListener("click", (e) => {
-  if (e.target?.dataset?.close === "1") closeLightbox();
+  if (e.target?.closest?.('[data-close="1"]')) closeLightbox();
 });
 lightboxClose.addEventListener("click", closeLightbox);
 
