@@ -93,7 +93,7 @@ async function loadEvents() {
     // Cover selection rules:
     // - total > 6: pick N images, where N is a stable-random int in [3,6]
     // - 3..6: use all images
-    // - < 3: use color blocks as placeholders (no images)
+    // - < 3: use all existing images, then pad with color blocks to 3
     let desired;
     if (totalCount > 6) desired = 3 + Math.floor(rnd() * 4);
     else if (totalCount >= 3) desired = totalCount;
@@ -105,8 +105,8 @@ async function loadEvents() {
     let mosaicKeys = [];
     let placeholders = 0;
     if (totalCount < 3) {
-      mosaicKeys = [];
-      placeholders = desired;
+      mosaicKeys = uniqueKeys.slice(0, Math.min(uniqueKeys.length, totalCount || uniqueKeys.length));
+      placeholders = Math.max(0, 3 - mosaicKeys.length);
     } else if (totalCount <= 6) {
       mosaicKeys = uniqueKeys;
       placeholders = Math.max(0, desired - mosaicKeys.length);
@@ -117,12 +117,12 @@ async function loadEvents() {
     }
 
     const mosaicImgs = mosaicKeys
-      .map((k) => `<img loading="lazy" src="${imgUrl(k)}" alt="" />`)
+      .map((k) => `<span class="mosaic-tile tile-img" style="background-image:url('${imgUrl(k).replace(/'/g, "%27")}')" aria-hidden="true"></span>`)
       .join("");
     const mosaicPh = Array.from({ length: placeholders })
       .map(() => {
         const hue = Math.floor(rnd() * 360);
-        return `<span class="mosaic-ph" style="--ph-hue:${hue}deg" aria-hidden="true"></span>`;
+        return `<span class="mosaic-tile mosaic-ph" style="--ph-hue:${hue}deg" aria-hidden="true"></span>`;
       })
       .join("");
 
