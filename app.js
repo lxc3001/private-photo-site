@@ -188,32 +188,6 @@ doUpload.onclick = async () => {
   const files = Array.from(fileInput?.files || []);
   const desc = (descInput?.value || "").trim(); // 批量上传时：该描述会应用到本次所有图片
 
-  async function runPool(items, concurrency, worker, onProgress) {
-    let nextIndex = 0;
-    let done = 0;
-    let firstError = null;
-
-    async function runner() {
-      while (true) {
-        const i = nextIndex++;
-        if (i >= items.length) return;
-        if (firstError) return;
-        try {
-          await worker(items[i], i);
-          done++;
-          onProgress?.(done, items.length);
-        } catch (e) {
-          firstError = e;
-          return;
-        }
-      }
-    }
-
-    const n = Math.max(1, Math.min(concurrency, items.length));
-    await Promise.all(Array.from({ length: n }, runner));
-    if (firstError) throw firstError;
-  }
-
   if (files.length === 0) return alert("请选择图片");
   if (files.length > MAX_BATCH) {
     return alert(`一次最多上传 ${MAX_BATCH} 张图片，请分批上传（当前选择：${files.length} 张）`);
@@ -226,29 +200,20 @@ doUpload.onclick = async () => {
   const originalBtnText = doUpload.textContent;
 
   try {
-    const isSmall = window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
-    const concurrency = isSmall ? 3 : 4;
+    for (let i = 0; i < files.length; i++) {
+      doUpload.textContent = `上传中... (${i + 1}/${files.length})`;
 
-    doUpload.textContent = `上传中... (0/${files.length})`;
-    await runPool(
-      files,
-      concurrency,
-      async (file) => {
-        const fd = new FormData();
-        fd.append("file", file);
-        fd.append("desc", desc);
+      const fd = new FormData();
+      fd.append("file", files[i]);
+      fd.append("desc", desc);
 
-        const res = await fetch("/api/upload", { method: "POST", body: fd });
-        if (!res.ok) {
-          const t = await res.text().catch(() => "");
-          const name = file?.name ? `\n文件：${file.name}` : "";
-          throw new Error((t || `上传失败: ${res.status}`) + name);
-        }
-      },
-      (done, total) => {
-        doUpload.textContent = `上传中... (${done}/${total})`;
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      if (!res.ok) {
+        const t = await res.text().catch(() => "");
+        const name = files[i]?.name ? `\n文件：${files[i].name}` : "";
+        throw new Error((t || `上传失败: ${res.status}`) + name);
       }
-    );
+    }
 
     // 清空输入并关闭
     fileInput.value = "";
