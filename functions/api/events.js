@@ -32,12 +32,23 @@ export async function onRequestGet({ env }) {
 
       const coverKey = cover && eventId ? `events/${eventId}/${cover}` : "";
 
+      // Provide a small set of sample photos for the timeline mosaic (max 12).
+      // We prefer the most recently uploaded photos (manifest appends on upload).
+      const photoFiles = photos
+        .map((p) => (typeof p?.file === "string" ? p.file : ""))
+        .filter(Boolean);
+      const sampleFiles = photoFiles.slice(-12);
+      const sampleKeys = eventId
+        ? sampleFiles.map((f) => `events/${eventId}/${f}`)
+        : [];
+
       events.push({
         eventId,
         title,
         date,
         note,
         coverKey,
+        sampleKeys,
         count: photos.length,
       });
     } catch {

@@ -52,28 +52,91 @@ async function loadEvents() {
   }
   emptyEl.style.display = "none";
 
+  function hash32(str) {
+    // FNV-1a
+    let h = 2166136261;
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  function mulberry32(seed) {
+    let a = seed >>> 0;
+    return function rand() {
+      a |= 0;
+      a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function shuffleInPlace(arr, rnd) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      const tmp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = tmp;
+    }
+    return arr;
+  }
+
   eventsEl.innerHTML = events.map((e, idx) => {
     // "is-left/is-right" means the marker (bend) hugs that edge.
     // The card is rendered on the opposite side to sit inside the bend.
     const edge = idx % 2 === 0 ? "left" : "right";
-    const cover = e.coverKey
-      ? `<img class="event-cover" loading="lazy" src="${imgUrl(e.coverKey)}" alt="" />`
-      : `<div class="event-cover placeholder"></div>`;
+    const rnd = mulberry32(hash32(String(e.eventId || idx)));
+    const totalCount = typeof e.count === "number" ? e.count : 0;
 
-    const meta = [e.date, typeof e.count === "number" ? `${e.count} 张` : ""]
-      .filter(Boolean)
-      .join(" · ");
+    // Cover selection rules:
+    // - total > 6: pick N images, where N is a stable-random int in [3,6]
+    // - 3..6: use all images
+    // - < 3: use color blocks as placeholders (no images)
+    let desired;
+    if (totalCount > 6) desired = 3 + Math.floor(rnd() * 4);
+    else if (totalCount >= 3) desired = totalCount;
+    else desired = 3;
+    const rawKeys = Array.isArray(e.sampleKeys) ? e.sampleKeys : [];
+    const keys = rawKeys.filter((k) => typeof k === "string" && k);
+    const uniqueKeys = shuffleInPlace(Array.from(new Set(keys)), rnd);
 
-    const note = e.note ? `<div class="event-note">${escapeHtml(e.note)}</div>` : "";
+    let mosaicKeys = [];
+    let placeholders = 0;
+    if (totalCount < 3) {
+      mosaicKeys = [];
+      placeholders = desired;
+    } else if (totalCount <= 6) {
+      mosaicKeys = uniqueKeys;
+      placeholders = Math.max(0, desired - mosaicKeys.length);
+    } else {
+      const take = Math.min(desired, uniqueKeys.length);
+      mosaicKeys = uniqueKeys.slice(0, take);
+      placeholders = Math.max(0, desired - mosaicKeys.length);
+    }
+
+    const mosaicImgs = mosaicKeys
+      .map((k) => `<img loading="lazy" src="${imgUrl(k)}" alt="" />`)
+      .join("");
+    const mosaicPh = Array.from({ length: placeholders })
+      .map(() => {
+        const hue = Math.floor(rnd() * 360);
+        return `<span class="mosaic-ph" style="--ph-hue:${hue}deg" aria-hidden="true"></span>`;
+      })
+      .join("");
+
+    const mosaic = `
+      <div class="event-mosaic stack mosaic-${desired}" aria-hidden="true">
+        ${mosaicImgs}${mosaicPh}
+      </div>
+    `;
+
+    const a11yLabel = [e.title || e.eventId, e.date].filter(Boolean).join(" · ");
 
     const card = `
-      <a class="event-card" href="timeline.html?eventId=${encodeURIComponent(e.eventId)}">
-        ${cover}
-        <div class="event-info">
-          <div class="event-card-title">${escapeHtml(e.title || e.eventId)}</div>
-          <div class="event-card-meta">${escapeHtml(meta)}</div>
-          ${note}
-        </div>
+      <a class="event-card" href="timeline.html?eventId=${encodeURIComponent(e.eventId)}" aria-label="${escapeHtml(a11yLabel)}" title="${escapeHtml(a11yLabel)}">
+        ${mosaic}
       </a>
     `;
 
