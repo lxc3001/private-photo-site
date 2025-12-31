@@ -347,6 +347,146 @@ body{
   overflow: hidden;
   perspective: 900px;
 }
+
+/* Stacked cards (no box-position vars): overlap via grid */
+.timeline-page .event-mosaic.stack-cards{
+  display: grid;
+  place-items: stretch;
+}
+
+.timeline-page .event-card:hover .event-mosaic.stack-cards{
+  overflow: visible;
+}
+
+.timeline-page .event-mosaic.stack-cards .mosaic-tile{
+  grid-area: 1 / 1;
+  position: relative;
+  left: auto;
+  top: auto;
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+  filter: none;
+  border-radius: 14px;
+  transform-style: preserve-3d;
+  z-index: var(--zi, 1);
+  --tx: 0px;
+  --ty: 0px;
+  --rot: 0deg;
+  --sc: 1;
+  transform: translate3d(var(--tx), var(--ty), 0px) rotate(var(--rot)) scale(var(--sc));
+}
+
+.timeline-page .event-card:hover .event-mosaic.stack-cards .mosaic-tile{
+  transform:
+    translate3d(var(--htx, var(--tx)), var(--hty, var(--ty)), 0px)
+    rotate(var(--hrot, var(--rot)))
+    scale(var(--hsc, var(--sc)));
+}
+
+/* Base stacked offsets + hover scatter (up to 6 tiles) */
+.timeline-page .event-mosaic.stack-cards .mosaic-tile:nth-child(1){ --zi: 6; --tx: 0px; --ty: 0px; --rot: 0.2deg; --sc: 1.00;  --htx:  0px; --hty: -10px; --hrot:  0.4deg; --hsc: 1.02; }
+.timeline-page .event-mosaic.stack-cards .mosaic-tile:nth-child(2){ --zi: 5; --tx:-6px; --ty: 6px; --rot:-1.6deg; --sc: 0.99; --htx:-18px; --hty: 10px; --hrot: -3.0deg; --hsc: 1.01; }
+.timeline-page .event-mosaic.stack-cards .mosaic-tile:nth-child(3){ --zi: 4; --tx: 7px; --ty: 7px; --rot: 1.8deg; --sc: 0.98;  --htx: 18px; --hty: 14px; --hrot:  3.2deg; --hsc: 1.00; }
+.timeline-page .event-mosaic.stack-cards .mosaic-tile:nth-child(4){ --zi: 3; --tx:-9px; --ty:-4px; --rot:-2.1deg; --sc: 0.97; --htx:-22px; --hty:-16px; --hrot: -4.0deg; --hsc: 0.99; }
+.timeline-page .event-mosaic.stack-cards .mosaic-tile:nth-child(5){ --zi: 2; --tx: 9px; --ty:-5px; --rot: 2.4deg; --sc: 0.96;  --htx: 24px; --hty:-18px; --hrot:  4.2deg; --hsc: 0.98; }
+.timeline-page .event-mosaic.stack-cards .mosaic-tile:nth-child(6){ --zi: 1; --tx: 0px; --ty:10px; --rot:-0.8deg; --sc: 0.95;  --htx:  0px; --hty: 22px; --hrot: -2.0deg; --hsc: 0.97; }
+
+/* Grid collage (original style) */
+.timeline-page .event-mosaic.mosaic-grid{
+  display: grid;
+  gap: 2px;
+  padding: 2px;
+  background: rgba(255,255,255,0.03);
+  perspective: none;
+}
+
+.timeline-page .event-card:hover .event-mosaic.mosaic-grid{
+  gap: 10px;
+  overflow: visible;
+}
+
+.timeline-page .event-mosaic.mosaic-grid .mosaic-tile{
+  position: relative;
+  left: auto;
+  top: auto;
+  width: auto;
+  height: auto;
+  border-radius: 12px;
+  opacity: 1;
+  filter: none;
+  z-index: 1;
+  transform: translate(0px, 0px) rotate(0deg) scale(1);
+  transition: transform .22s ease, box-shadow .22s ease;
+  box-shadow: none;
+}
+
+.timeline-page .event-mosaic.mosaic-grid .mosaic-tile.tile-img{
+  background-image: var(--tile-img);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.timeline-page .event-card:hover .event-mosaic.mosaic-grid .mosaic-tile{
+  transform: translate(var(--sx, 0px), var(--sy, 0px)) rotate(var(--srot, 0deg)) scale(1.02);
+  box-shadow:
+    0 16px 38px rgba(0,0,0,0.38),
+    0 4px 12px rgba(0,0,0,0.22);
+  z-index: 2;
+}
+
+/* Mosaic layouts */
+.timeline-page .event-mosaic.mosaic-grid.mosaic-3{
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+.timeline-page .event-mosaic.mosaic-grid.mosaic-3 .mosaic-tile:nth-child(1){ grid-column: 1 / 2; grid-row: 1 / 3; }
+.timeline-page .event-mosaic.mosaic-grid.mosaic-3 .mosaic-tile:nth-child(2){ grid-column: 2 / 3; grid-row: 1 / 2; }
+.timeline-page .event-mosaic.mosaic-grid.mosaic-3 .mosaic-tile:nth-child(3){ grid-column: 2 / 3; grid-row: 2 / 3; }
+
+.timeline-page .event-mosaic.mosaic-grid.mosaic-4{
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+.timeline-page .event-mosaic.mosaic-grid.mosaic-5{
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+.timeline-page .event-mosaic.mosaic-grid.mosaic-5 .mosaic-tile:nth-child(1){ grid-column: 1 / 3; grid-row: 1 / 2; }
+.timeline-page .event-mosaic.mosaic-grid.mosaic-5 .mosaic-tile:nth-child(2){ grid-column: 3 / 4; grid-row: 1 / 2; }
+.timeline-page .event-mosaic.mosaic-grid.mosaic-5 .mosaic-tile:nth-child(3){ grid-column: 1 / 2; grid-row: 2 / 3; }
+.timeline-page .event-mosaic.mosaic-grid.mosaic-5 .mosaic-tile:nth-child(4){ grid-column: 2 / 3; grid-row: 2 / 3; }
+.timeline-page .event-mosaic.mosaic-grid.mosaic-5 .mosaic-tile:nth-child(5){ grid-column: 3 / 4; grid-row: 2 / 3; }
+
+.timeline-page .event-mosaic.mosaic-grid.mosaic-6{
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+/* Hover scatter vectors */
+.timeline-page .event-mosaic.mosaic-grid.mosaic-3 .mosaic-tile:nth-child(1){ --sx:-14px; --sy:-10px; --srot:-2deg; }
+.timeline-page .event-mosaic.mosaic-grid.mosaic-3 .mosaic-tile:nth-child(2){ --sx: 12px; --sy:-12px; --srot: 2deg; }
+.timeline-page .event-mosaic.mosaic-grid.mosaic-3 .mosaic-tile:nth-child(3){ --sx: 14px; --sy: 12px; --srot: 1deg; }
+
+.timeline-page .event-mosaic.mosaic-grid.mosaic-4 .mosaic-tile:nth-child(1){ --sx:-12px; --sy:-12px; --srot:-2deg; }
+.timeline-page .event-mosaic.mosaic-grid.mosaic-4 .mosaic-tile:nth-child(2){ --sx: 12px; --sy:-12px; --srot: 2deg; }
+.timeline-page .event-mosaic.mosaic-grid.mosaic-4 .mosaic-tile:nth-child(3){ --sx:-12px; --sy: 12px; --srot: 1deg; }
+.timeline-page .event-mosaic.mosaic-grid.mosaic-4 .mosaic-tile:nth-child(4){ --sx: 12px; --sy: 12px; --srot:-1deg; }
+
+.timeline-page .event-mosaic.mosaic-grid.mosaic-5 .mosaic-tile:nth-child(1){ --sx:-12px; --sy:-14px; --srot:-2deg; }
+.timeline-page .event-mosaic.mosaic-grid.mosaic-5 .mosaic-tile:nth-child(2){ --sx: 14px; --sy:-12px; --srot: 2deg; }
+.timeline-page .event-mosaic.mosaic-grid.mosaic-5 .mosaic-tile:nth-child(3){ --sx:-14px; --sy: 12px; --srot: 1deg; }
+.timeline-page .event-mosaic.mosaic-grid.mosaic-5 .mosaic-tile:nth-child(4){ --sx:  0px; --sy: 16px; --srot:-1deg; }
+.timeline-page .event-mosaic.mosaic-grid.mosaic-5 .mosaic-tile:nth-child(5){ --sx: 14px; --sy: 12px; --srot: 1deg; }
+
+.timeline-page .event-mosaic.mosaic-grid.mosaic-6 .mosaic-tile:nth-child(1){ --sx:-12px; --sy:-14px; --srot:-2deg; }
+.timeline-page .event-mosaic.mosaic-grid.mosaic-6 .mosaic-tile:nth-child(2){ --sx:  0px; --sy:-16px; --srot: 1deg; }
+.timeline-page .event-mosaic.mosaic-grid.mosaic-6 .mosaic-tile:nth-child(3){ --sx: 12px; --sy:-14px; --srot: 2deg; }
+.timeline-page .event-mosaic.mosaic-grid.mosaic-6 .mosaic-tile:nth-child(4){ --sx:-12px; --sy: 14px; --srot: 1deg; }
+.timeline-page .event-mosaic.mosaic-grid.mosaic-6 .mosaic-tile:nth-child(5){ --sx:  0px; --sy: 16px; --srot:-1deg; }
+.timeline-page .event-mosaic.mosaic-grid.mosaic-6 .mosaic-tile:nth-child(6){ --sx: 12px; --sy: 14px; --srot:-1deg; }
 .timeline-page .event-mosaic .mosaic-tile{
   position: absolute;
   left: var(--x, 0%);
@@ -377,13 +517,27 @@ body{
 }
 
 .timeline-page .event-mosaic .mosaic-tile.tile-img{
+  /*
+    Foreground: show the whole image (contain, no crop).
+    Background: same image as cover to fill letterboxing (may crop, but it's behind).
+    This keeps the original photo intact while avoiding big empty bars.
+  */
   background-image:
+    linear-gradient(rgba(0,0,0,0.32), rgba(0,0,0,0.32)),
+    var(--tile-img),
     var(--tile-img);
-  /* Keep original photo ratio: scale down to fit the tile box (no crop). */
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-color: rgba(255,255,255,0.02);
+  background-size:
+    cover,
+    contain,
+    cover;
+  background-repeat:
+    no-repeat,
+    no-repeat,
+    no-repeat;
+  background-position:
+    center,
+    center,
+    center;
 }
 
 /* Simple "floating card" highlight */

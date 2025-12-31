@@ -137,15 +137,6 @@ async function loadEvents() {
     const rnd = mulberry32(hash32(String(e.eventId || idx)));
     const totalCount = typeof e.count === "number" ? e.count : 0;
 
-    // Each cover gets its own fixed-size box (stable per eventId).
-    const isSmall = window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
-    const minW = isSmall ? 150 : 360;
-    const maxW = isSmall ? 200 : 480;
-    const minH = isSmall ? 120 : 280;
-    const maxH = isSmall ? 170 : 400;
-    const boxW = Math.round(minW + rnd() * (maxW - minW));
-    const boxH = Math.round(minH + rnd() * (maxH - minH));
-
     // Cover selection rules:
     // - total > 6: pick N images, where N is a stable-random int in [3,6]
     // - 3..6: use all images
@@ -172,38 +163,21 @@ async function loadEvents() {
       placeholders = Math.max(0, desired - mosaicKeys.length);
     }
 
-    // Vary edge-anchoring patterns between covers.
-    // 0: LT,RT,LB,RB
-    // 1: LT,LB,RT,RB
-    // 2: RT,RB,LT,LB
-    // 3: RB,LB,RT,LT
-    const pattern = Math.floor(rnd() * 4);
-    const anchorOrders = [
-      [0, 1, 2, 3],
-      [0, 2, 1, 3],
-      [1, 3, 0, 2],
-      [3, 2, 1, 0],
-    ];
-    const anchorOrder = anchorOrders[pattern] || anchorOrders[0];
-
     const mosaicImgs = mosaicKeys
       .map((k, i) => {
         const u = imgUrl(k).replace(/'/g, "%27");
-        const vars = tileVars(i, desired, rnd, anchorOrder);
-        return `<span class="mosaic-tile tile-img" style="${vars};--tile-img:url('${u}')" aria-hidden="true"></span>`;
+        return `<span class="mosaic-tile tile-img" style="--tile-img:url('${u}')" aria-hidden="true"></span>`;
       })
       .join("");
     const mosaicPh = Array.from({ length: placeholders })
       .map((_, i0) => {
-        const i = mosaicKeys.length + i0;
-        const vars = tileVars(i, desired, rnd, anchorOrder);
         const hue = Math.floor(rnd() * 360);
-        return `<span class="mosaic-tile mosaic-ph" style="${vars};--ph-hue:${hue}deg" aria-hidden="true"></span>`;
+        return `<span class="mosaic-tile mosaic-ph" style="--ph-hue:${hue}deg" aria-hidden="true"></span>`;
       })
       .join("");
 
     const mosaic = `
-      <div class="event-mosaic stack mosaic-${desired}" style="--mosaic-w:${boxW}px;--mosaic-h:${boxH}px" aria-hidden="true">
+      <div class="event-mosaic stack stack-cards mosaic-${desired}" aria-hidden="true">
         ${mosaicImgs}${mosaicPh}
       </div>
     `;
