@@ -117,7 +117,10 @@ async function loadEvents() {
     }
 
     const mosaicImgs = mosaicKeys
-      .map((k) => `<span class="mosaic-tile tile-img" style="background-image:url('${imgUrl(k).replace(/'/g, "%27")}')" aria-hidden="true"></span>`)
+      .map((k) => {
+        const u = imgUrl(k).replace(/'/g, "%27");
+        return `<span class="mosaic-tile tile-img" style="--tile-img:url('${u}')" aria-hidden="true"></span>`;
+      })
       .join("");
     const mosaicPh = Array.from({ length: placeholders })
       .map(() => {

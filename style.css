@@ -326,7 +326,7 @@ body{
   aspect-ratio: 16 / 11;
   position: relative;
   display: block;
-  border-radius: 14px;
+  border-radius: 0;
   perspective: 900px;
 }
 .timeline-page .event-mosaic .mosaic-tile{
@@ -336,7 +336,7 @@ body{
   height: 100%;
   background-size: cover;
   background-position: center;
-  border-radius: 12px;
+  border-radius: 0;
   transform-style: preserve-3d;
   transition: transform .22s ease, filter .22s ease, opacity .22s ease;
 }
@@ -346,38 +346,56 @@ body{
   box-shadow:
     0 12px 28px rgba(0,0,0,0.22),
     inset 0 1px 0 rgba(255,255,255,0.10);
+  --thick: 22px;
 }
 
-/* Glassy highlight + thickness (cuboid illusion) */
+.timeline-page .event-mosaic .mosaic-tile.tile-img{
+  background-image:
+    linear-gradient(135deg,
+      rgba(255,255,255,0.20),
+      rgba(255,255,255,0.06) 40%,
+      rgba(255,255,255,0.00) 68%
+    ),
+    var(--tile-img);
+}
+
+/* Cuboid thickness: explicit right face */
 .timeline-page .event-mosaic .mosaic-tile::before{
   content:"";
   position: absolute;
-  inset: 0;
-  border-radius: 12px;
-  background:
-    linear-gradient(135deg,
-      rgba(255,255,255,0.22),
-      rgba(255,255,255,0.08) 36%,
-      rgba(255,255,255,0.00) 62%
-    );
-  mix-blend-mode: screen;
-  opacity: .55;
+  top: 0;
+  right: calc(var(--thick) * -1);
+  width: var(--thick);
+  height: 100%;
+  background: linear-gradient(to bottom,
+    rgba(255,255,255,0.10),
+    rgba(0,0,0,0.16)
+  );
+  transform: skewY(-18deg);
+  transform-origin: left top;
+  opacity: .72;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-left: 0;
   pointer-events: none;
 }
+
+/* Cuboid thickness: explicit bottom face */
 .timeline-page .event-mosaic .mosaic-tile::after{
   content:"";
   position: absolute;
-  left: 10px;
-  right: -10px;
-  bottom: -12px;
-  height: 16px;
-  border-radius: 0 0 12px 12px;
-  background: linear-gradient(to bottom,
-    rgba(255,255,255,0.10),
-    rgba(255,255,255,0.00)
+  left: 0;
+  bottom: calc(var(--thick) * -1);
+  width: 100%;
+  height: var(--thick);
+  background: linear-gradient(to right,
+    rgba(255,255,255,0.08),
+    rgba(0,0,0,0.20)
   );
   transform: skewX(-18deg);
-  opacity: .45;
+  transform-origin: left top;
+  opacity: .68;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-top: 0;
   pointer-events: none;
 }
 
@@ -393,43 +411,51 @@ body{
   z-index: 6;
   filter: none;
   opacity: 1;
-  transform: translate3d(0px,0px,46px) rotate(-1.2deg);
+  --thick: 26px;
+  transform: translate3d(0px,0px,86px) rotate(-0.4deg) scale(1.02);
 }
 .timeline-page .event-mosaic.stack > :nth-child(2){
   z-index: 5;
   filter: blur(1.6px);
   opacity: .82;
-  transform: translate3d(-18px,12px,28px) rotate(1.0deg) scale(.985);
+  --thick: 22px;
+  transform: translate3d(-44px,28px,56px) rotate(0.6deg) scale(.985);
 }
 .timeline-page .event-mosaic.stack > :nth-child(3){
   z-index: 4;
   filter: blur(2.6px);
   opacity: .66;
-  transform: translate3d(20px,22px,14px) rotate(-.6deg) scale(.97);
+  --thick: 20px;
+  transform: translate3d(56px,56px,32px) rotate(-0.5deg) scale(.965);
 }
 .timeline-page .event-mosaic.stack > :nth-child(4){
   z-index: 3;
   filter: blur(3.6px);
   opacity: .54;
-  transform: translate3d(-24px,30px,2px) rotate(.8deg) scale(.955);
+  --thick: 18px;
+  transform: translate3d(-68px,82px,14px) rotate(0.5deg) scale(.945);
 }
 .timeline-page .event-mosaic.stack > :nth-child(5){
   z-index: 2;
   filter: blur(4.6px);
   opacity: .44;
-  transform: translate3d(28px,38px,-6px) rotate(-.8deg) scale(.94);
+  --thick: 16px;
+  transform: translate3d(78px,110px,2px) rotate(-0.5deg) scale(.925);
 }
 .timeline-page .event-mosaic.stack > :nth-child(6){
   z-index: 1;
   filter: blur(5.6px);
   opacity: .36;
-  transform: translate3d(-30px,44px,-12px) rotate(1.2deg) scale(.925);
+  --thick: 14px;
+  transform: translate3d(-92px,140px,-4px) rotate(0.5deg) scale(.905);
 }
 
 /* Fine-tune offsets per count so stacks feel "balanced" */
 .timeline-page .event-mosaic.stack.mosaic-3 > :nth-child(1){ transform: translate3d(0,0,40px) rotate(-1.2deg); }
-.timeline-page .event-mosaic.stack.mosaic-3 > :nth-child(2){ transform: translate3d(-20px,14px,18px) rotate(1.0deg) scale(.985); }
-.timeline-page .event-mosaic.stack.mosaic-3 > :nth-child(3){ transform: translate3d(22px,26px,0px) rotate(-.7deg) scale(.97); opacity: .62; filter: blur(3px); }
+.timeline-page .event-mosaic.stack.mosaic-3 > :nth-child(1){ transform: translate3d(0,0,52px) rotate(-0.6deg); }
+.timeline-page .event-mosaic.stack.mosaic-3 > :nth-child(1){ --thick: 26px; transform: translate3d(0,0,86px) rotate(-0.4deg) scale(1.02); }
+.timeline-page .event-mosaic.stack.mosaic-3 > :nth-child(2){ --thick: 20px; transform: translate3d(-52px,34px,40px) rotate(0.5deg) scale(.96); }
+.timeline-page .event-mosaic.stack.mosaic-3 > :nth-child(3){ --thick: 16px; transform: translate3d(64px,72px,10px) rotate(-0.4deg) scale(.93); opacity: .58; filter: blur(3.2px); }
 
 .timeline-page .event-mosaic.stack.mosaic-4 > :nth-child(2){ transform: translate3d(-14px,10px,18px) rotate(1.1deg) scale(.985); }
 .timeline-page .event-mosaic.stack.mosaic-4 > :nth-child(3){ transform: translate3d(14px,18px,6px) rotate(-.6deg) scale(.97); }
@@ -440,7 +466,7 @@ body{
 .timeline-page .event-mosaic.stack.mosaic-6 > :nth-child(6){ transform: translate3d(-20px,34px,-14px) rotate(1.2deg) scale(.925); }
 
 .timeline-page .event-card:hover .event-mosaic.stack > :nth-child(1){
-  transform: translate3d(0,-2px,46px) rotate(-1.0deg) scale(1.01);
+  transform: translate3d(0,-6px,92px) rotate(-0.3deg) scale(1.03);
 }
 
 
