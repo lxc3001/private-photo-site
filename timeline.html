@@ -23,6 +23,7 @@
       <a class="btn" href="index.html">全部照片</a>
       <button id="new-event-btn" class="btn primary">＋ 新建事件</button>
       <button id="event-upload-btn" class="btn" style="display:none">＋ 上传到此事件</button>
+      <button id="edit-event-btn" class="btn" style="display:none">编辑事件</button>
       <button id="delete-event-btn" class="btn" style="display:none">删除事件</button>
     </div>
   </header>
@@ -96,6 +97,35 @@
 
       <div class="dialog-actions">
         <button id="create-submit" class="btn primary">创建</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Edit event dialog -->
+  <dialog id="edit-dialog" class="dialog">
+    <div class="dialog-head">
+      <div class="dialog-title">编辑事件</div>
+      <button id="edit-close" class="icon-btn" aria-label="Close">✕</button>
+    </div>
+
+    <div class="dialog-body">
+      <label class="field">
+        <span>标题</span>
+        <input id="edit-title" type="text" placeholder="例如：Christmas 2025" />
+      </label>
+
+      <label class="field">
+        <span>日期（YYYY-MM-DD）</span>
+        <input id="edit-date" type="date" />
+      </label>
+
+      <label class="field">
+        <span>描述（可选）</span>
+        <textarea id="edit-note" rows="3" placeholder="一句话记录这个事件..."></textarea>
+      </label>
+
+      <div class="dialog-actions">
+        <button id="edit-submit" class="btn primary">保存</button>
       </div>
     </div>
   </dialog>

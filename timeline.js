@@ -405,7 +405,16 @@ const pageSubtitle = qs("page-subtitle");
 const eventTitleEl = qs("event-title");
 const eventMetaEl = qs("event-meta");
 const eventUploadBtn = qs("event-upload-btn");
+const editEventBtn = qs("edit-event-btn");
 const deleteEventBtn = qs("delete-event-btn");
+
+// Edit dialog
+const editDialog = qs("edit-dialog");
+const editClose = qs("edit-close");
+const editTitle = qs("edit-title");
+const editDate = qs("edit-date");
+const editNote = qs("edit-note");
+const editSubmit = qs("edit-submit");
 
 const gallery = qs("gallery");
 const lightbox = qs("lightbox");
@@ -414,6 +423,7 @@ const lightboxCaption = qs("lightbox-caption");
 
 let PHOTOS = []; // [{ key, desc }]
 let currentIndex = -1;
+let CURRENT_EVENT_MANIFEST = null;
 
 function isLightboxOpen() {
   return lightbox.getAttribute("aria-hidden") === "false";
@@ -482,6 +492,7 @@ window.addEventListener("keydown", (e) => {
 
 async function loadEvent(eventId) {
   const manifest = await jsonFetch(`/api/event?eventId=${encodeURIComponent(eventId)}`, { cache: "no-store" });
+  CURRENT_EVENT_MANIFEST = manifest;
 
   const title = typeof manifest?.title === "string" ? manifest.title : eventId;
   const date = typeof manifest?.date === "string" ? manifest.date : "";
@@ -498,6 +509,57 @@ async function loadEvent(eventId) {
   }).filter((p) => p.key && !p.key.endsWith("/"));
 
   renderGallery();
+}
+
+function openEditDialog() {
+  const eventId = getEventIdFromUrl();
+  if (!eventId) return;
+
+  const m = CURRENT_EVENT_MANIFEST || {};
+  editTitle.value = typeof m?.title === "string" ? m.title : "";
+  editDate.value = typeof m?.date === "string" ? m.date : "";
+  editNote.value = typeof m?.note === "string" ? m.note : "";
+
+  editDialog.showModal();
+  editTitle.focus();
+}
+
+if (editClose) {
+  editClose.addEventListener("click", () => editDialog.close());
+}
+
+if (editSubmit) {
+  editSubmit.addEventListener("click", async () => {
+    const eventId = getEventIdFromUrl();
+    if (!eventId) return alert("缺少 eventId");
+
+    const title = (editTitle.value || "").trim();
+    const date = (editDate.value || "").trim();
+    const note = (editNote.value || "").trim();
+
+    if (!title) return alert("请填写标题");
+    if (!date) return alert("请填写日期");
+
+    editSubmit.disabled = true;
+    const original = editSubmit.textContent;
+    editSubmit.textContent = "保存中...";
+
+    try {
+      await jsonFetch("/api/event-update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId, title, date, note }),
+      });
+
+      editDialog.close();
+      await loadEvent(eventId);
+    } catch (e) {
+      alert(e.message || String(e));
+    } finally {
+      editSubmit.disabled = false;
+      editSubmit.textContent = original || "保存";
+    }
+  });
 }
 
 async function deleteEvent(eventId) {
@@ -595,6 +657,7 @@ doUpload.addEventListener("click", async () => {
     timelineView.style.display = "block";
     eventView.style.display = "none";
     eventUploadBtn.style.display = "none";
+    if (editEventBtn) editEventBtn.style.display = "none";
     deleteEventBtn.style.display = "none";
     await loadEvents();
     return;
@@ -605,8 +668,10 @@ doUpload.addEventListener("click", async () => {
   timelineView.style.display = "none";
   eventView.style.display = "block";
   eventUploadBtn.style.display = "inline-flex";
+  if (editEventBtn) editEventBtn.style.display = "inline-flex";
   deleteEventBtn.style.display = "inline-flex";
   deleteEventBtn.onclick = () => deleteEvent(eventId);
+  if (editEventBtn) editEventBtn.onclick = () => openEditDialog();
 
   await loadEvent(eventId);
 })();
