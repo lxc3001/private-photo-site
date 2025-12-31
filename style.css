@@ -346,7 +346,7 @@ body{
   box-shadow:
     0 12px 28px rgba(0,0,0,0.22),
     inset 0 1px 0 rgba(255,255,255,0.10);
-  --thick: 22px;
+  --thick: 11px;
 }
 
 .timeline-page .event-mosaic .mosaic-tile.tile-img{
@@ -357,6 +357,28 @@ body{
       rgba(255,255,255,0.00) 68%
     ),
     var(--tile-img);
+}
+
+/* Extend the photo texture onto cuboid faces */
+.timeline-page .event-mosaic .mosaic-tile.tile-img::before{
+  background-image:
+    linear-gradient(to bottom,
+      rgba(255,255,255,0.08),
+      rgba(0,0,0,0.22)
+    ),
+    var(--tile-img);
+  background-size: cover;
+  background-position: right center;
+}
+.timeline-page .event-mosaic .mosaic-tile.tile-img::after{
+  background-image:
+    linear-gradient(to right,
+      rgba(255,255,255,0.06),
+      rgba(0,0,0,0.26)
+    ),
+    var(--tile-img);
+  background-size: cover;
+  background-position: center bottom;
 }
 
 /* Cuboid thickness: explicit right face */
@@ -411,51 +433,52 @@ body{
   z-index: 6;
   filter: none;
   opacity: 1;
-  --thick: 26px;
+  --thick: 13px;
   transform: translate3d(0px,0px,86px) rotate(-0.4deg) scale(1.02);
 }
 .timeline-page .event-mosaic.stack > :nth-child(2){
   z-index: 5;
   filter: blur(1.6px);
   opacity: .82;
-  --thick: 22px;
-  transform: translate3d(-44px,28px,56px) rotate(0.6deg) scale(.985);
+  --thick: 11px;
+  transform: translate3d(-78px,52px,56px) rotate(0.6deg) scale(.98);
 }
 .timeline-page .event-mosaic.stack > :nth-child(3){
   z-index: 4;
   filter: blur(2.6px);
   opacity: .66;
-  --thick: 20px;
-  transform: translate3d(56px,56px,32px) rotate(-0.5deg) scale(.965);
+  --thick: 10px;
+  transform: translate3d(96px,92px,32px) rotate(-0.5deg) scale(.955);
 }
 .timeline-page .event-mosaic.stack > :nth-child(4){
   z-index: 3;
   filter: blur(3.6px);
   opacity: .54;
-  --thick: 18px;
-  transform: translate3d(-68px,82px,14px) rotate(0.5deg) scale(.945);
+  --thick: 9px;
+  transform: translate3d(-116px,140px,14px) rotate(0.5deg) scale(.93);
 }
 .timeline-page .event-mosaic.stack > :nth-child(5){
   z-index: 2;
   filter: blur(4.6px);
   opacity: .44;
-  --thick: 16px;
-  transform: translate3d(78px,110px,2px) rotate(-0.5deg) scale(.925);
+  --thick: 8px;
+  transform: translate3d(138px,188px,2px) rotate(-0.5deg) scale(.905);
 }
 .timeline-page .event-mosaic.stack > :nth-child(6){
   z-index: 1;
   filter: blur(5.6px);
   opacity: .36;
-  --thick: 14px;
-  transform: translate3d(-92px,140px,-4px) rotate(0.5deg) scale(.905);
+  --thick: 7px;
+  transform: translate3d(-162px,248px,-4px) rotate(0.5deg) scale(.885);
 }
 
 /* Fine-tune offsets per count so stacks feel "balanced" */
 .timeline-page .event-mosaic.stack.mosaic-3 > :nth-child(1){ transform: translate3d(0,0,40px) rotate(-1.2deg); }
 .timeline-page .event-mosaic.stack.mosaic-3 > :nth-child(1){ transform: translate3d(0,0,52px) rotate(-0.6deg); }
 .timeline-page .event-mosaic.stack.mosaic-3 > :nth-child(1){ --thick: 26px; transform: translate3d(0,0,86px) rotate(-0.4deg) scale(1.02); }
-.timeline-page .event-mosaic.stack.mosaic-3 > :nth-child(2){ --thick: 20px; transform: translate3d(-52px,34px,40px) rotate(0.5deg) scale(.96); }
-.timeline-page .event-mosaic.stack.mosaic-3 > :nth-child(3){ --thick: 16px; transform: translate3d(64px,72px,10px) rotate(-0.4deg) scale(.93); opacity: .58; filter: blur(3.2px); }
+.timeline-page .event-mosaic.stack.mosaic-3 > :nth-child(1){ --thick: 13px; transform: translate3d(0,0,86px) rotate(-0.4deg) scale(1.02); }
+.timeline-page .event-mosaic.stack.mosaic-3 > :nth-child(2){ --thick: 10px; transform: translate3d(-92px,66px,40px) rotate(0.5deg) scale(.95); }
+.timeline-page .event-mosaic.stack.mosaic-3 > :nth-child(3){ --thick: 8px; transform: translate3d(116px,126px,10px) rotate(-0.4deg) scale(.91); opacity: .56; filter: blur(3.2px); }
 
 .timeline-page .event-mosaic.stack.mosaic-4 > :nth-child(2){ transform: translate3d(-14px,10px,18px) rotate(1.1deg) scale(.985); }
 .timeline-page .event-mosaic.stack.mosaic-4 > :nth-child(3){ transform: translate3d(14px,18px,6px) rotate(-.6deg) scale(.97); }
