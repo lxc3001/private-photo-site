@@ -322,11 +322,11 @@ body{
 
 /* Borderless mosaic cover */
 .timeline-page .event-mosaic{
-  width: 280px;
-  aspect-ratio: 16 / 11;
+  width: var(--mosaic-w, 280px);
+  height: var(--mosaic-h, 193px);
   position: relative;
   display: block;
-  border-radius: 0;
+  border-radius: 14px;
   perspective: 900px;
 }
 .timeline-page .event-mosaic .mosaic-tile{
@@ -336,15 +336,26 @@ body{
   height: 100%;
   background-size: cover;
   background-position: center;
-  border-radius: 0;
+  border-radius: 12px;
   transform-style: preserve-3d;
   transition: transform .22s ease, filter .22s ease, opacity .22s ease;
+  z-index: var(--zi, 1);
+  opacity: var(--op, 1);
+  filter: blur(var(--blur, 0px));
+  transform:
+    translate3d(
+      var(--dx, 0px),
+      calc(var(--dy, 0px) + var(--lift, 0px)),
+      var(--dz, 0px)
+    )
+    rotate(var(--rot, 0deg))
+    scale(var(--sc, 1));
 }
 .timeline-page .event-mosaic .mosaic-tile{
   display: block;
   border: 1px solid rgba(255,255,255,0.10);
   box-shadow:
-    0 12px 28px rgba(0,0,0,0.22),
+    14px -10px 26px rgba(0,0,0,0.22),
     inset 0 1px 0 rgba(255,255,255,0.10);
   --thick: 11px;
 }
@@ -378,7 +389,7 @@ body{
     ),
     var(--tile-img);
   background-size: cover;
-  background-position: center bottom;
+  background-position: center top;
 }
 
 /* Cuboid thickness: explicit right face */
@@ -399,26 +410,30 @@ body{
   border: 1px solid rgba(255,255,255,0.10);
   border-left: 0;
   pointer-events: none;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
 }
 
-/* Cuboid thickness: explicit bottom face */
+/* Cuboid thickness: explicit top face */
 .timeline-page .event-mosaic .mosaic-tile::after{
   content:"";
   position: absolute;
   left: 0;
-  bottom: calc(var(--thick) * -1);
+  top: calc(var(--thick) * -1);
   width: 100%;
   height: var(--thick);
   background: linear-gradient(to right,
-    rgba(255,255,255,0.08),
-    rgba(0,0,0,0.20)
+    rgba(255,255,255,0.18),
+    rgba(255,255,255,0.04)
   );
-  transform: skewX(-18deg);
-  transform-origin: left top;
+  transform: skewX(18deg);
+  transform-origin: left bottom;
   opacity: .68;
   border: 1px solid rgba(255,255,255,0.10);
-  border-top: 0;
+  border-bottom: 0;
   pointer-events: none;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
 }
 
 .timeline-page .event-mosaic .mosaic-tile.mosaic-ph{
@@ -429,67 +444,8 @@ body{
 }
 
 /* 3D stacked look: back layers are blurrier + more transparent */
-.timeline-page .event-mosaic.stack > :nth-child(1){
-  z-index: 6;
-  filter: none;
-  opacity: 1;
-  --thick: 13px;
-  transform: translate3d(0px,0px,86px) rotate(-0.4deg) scale(1.02);
-}
-.timeline-page .event-mosaic.stack > :nth-child(2){
-  z-index: 5;
-  filter: blur(1.6px);
-  opacity: .82;
-  --thick: 11px;
-  transform: translate3d(-78px,52px,56px) rotate(0.6deg) scale(.98);
-}
-.timeline-page .event-mosaic.stack > :nth-child(3){
-  z-index: 4;
-  filter: blur(2.6px);
-  opacity: .66;
-  --thick: 10px;
-  transform: translate3d(96px,92px,32px) rotate(-0.5deg) scale(.955);
-}
-.timeline-page .event-mosaic.stack > :nth-child(4){
-  z-index: 3;
-  filter: blur(3.6px);
-  opacity: .54;
-  --thick: 9px;
-  transform: translate3d(-116px,140px,14px) rotate(0.5deg) scale(.93);
-}
-.timeline-page .event-mosaic.stack > :nth-child(5){
-  z-index: 2;
-  filter: blur(4.6px);
-  opacity: .44;
-  --thick: 8px;
-  transform: translate3d(138px,188px,2px) rotate(-0.5deg) scale(.905);
-}
-.timeline-page .event-mosaic.stack > :nth-child(6){
-  z-index: 1;
-  filter: blur(5.6px);
-  opacity: .36;
-  --thick: 7px;
-  transform: translate3d(-162px,248px,-4px) rotate(0.5deg) scale(.885);
-}
-
-/* Fine-tune offsets per count so stacks feel "balanced" */
-.timeline-page .event-mosaic.stack.mosaic-3 > :nth-child(1){ transform: translate3d(0,0,40px) rotate(-1.2deg); }
-.timeline-page .event-mosaic.stack.mosaic-3 > :nth-child(1){ transform: translate3d(0,0,52px) rotate(-0.6deg); }
-.timeline-page .event-mosaic.stack.mosaic-3 > :nth-child(1){ --thick: 26px; transform: translate3d(0,0,86px) rotate(-0.4deg) scale(1.02); }
-.timeline-page .event-mosaic.stack.mosaic-3 > :nth-child(1){ --thick: 13px; transform: translate3d(0,0,86px) rotate(-0.4deg) scale(1.02); }
-.timeline-page .event-mosaic.stack.mosaic-3 > :nth-child(2){ --thick: 10px; transform: translate3d(-92px,66px,40px) rotate(0.5deg) scale(.95); }
-.timeline-page .event-mosaic.stack.mosaic-3 > :nth-child(3){ --thick: 8px; transform: translate3d(116px,126px,10px) rotate(-0.4deg) scale(.91); opacity: .56; filter: blur(3.2px); }
-
-.timeline-page .event-mosaic.stack.mosaic-4 > :nth-child(2){ transform: translate3d(-14px,10px,18px) rotate(1.1deg) scale(.985); }
-.timeline-page .event-mosaic.stack.mosaic-4 > :nth-child(3){ transform: translate3d(14px,18px,6px) rotate(-.6deg) scale(.97); }
-.timeline-page .event-mosaic.stack.mosaic-4 > :nth-child(4){ transform: translate3d(-18px,26px,-8px) rotate(.9deg) scale(.955); }
-
-.timeline-page .event-mosaic.stack.mosaic-5 > :nth-child(5){ transform: translate3d(18px,30px,-10px) rotate(-.9deg) scale(.94); }
-
-.timeline-page .event-mosaic.stack.mosaic-6 > :nth-child(6){ transform: translate3d(-20px,34px,-14px) rotate(1.2deg) scale(.925); }
-
-.timeline-page .event-card:hover .event-mosaic.stack > :nth-child(1){
-  transform: translate3d(0,-6px,92px) rotate(-0.3deg) scale(1.03);
+.timeline-page .event-card:hover .event-mosaic.stack{
+  --lift: -6px;
 }
 
 

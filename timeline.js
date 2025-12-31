@@ -83,6 +83,36 @@ async function loadEvents() {
     return arr;
   }
 
+  function tileVars(layerIndex, layerCount, rnd) {
+    // layerIndex: 0 is front
+    const i = layerIndex;
+    const depth = layerCount - 1;
+    const t = depth > 0 ? i / depth : 0;
+
+    // Larger, more varied offsets for different covers.
+    const spreadX = 26 + t * 110;
+    const spreadY = 22 + t * 120;
+    const dx = Math.round((rnd() * 2 - 1) * spreadX);
+    const dy = Math.round((rnd() * 2 - 1) * spreadY);
+
+    // Depth spacing (front closer).
+    const dz = Math.round(88 - i * 18);
+
+    // Rotation + scale differences.
+    const rot = (rnd() * 2 - 1) * (0.8 + t * 1.3);
+    const sc = 1.03 - t * 0.16;
+
+    // Glass thickness taper (front slightly thicker).
+    const thick = Math.max(6, Math.round(12 - t * 5));
+
+    // Back layers more transparent + blurrier.
+    const op = Math.max(0.28, 1 - t * 0.55);
+    const blur = Math.max(0, t * 5.2);
+
+    const zi = 100 - i;
+    return `--dx:${dx}px;--dy:${dy}px;--dz:${dz}px;--rot:${rot.toFixed(2)}deg;--sc:${sc.toFixed(3)};--thick:${thick}px;--op:${op.toFixed(3)};--blur:${blur.toFixed(2)}px;--zi:${zi}`;
+  }
+
   eventsEl.innerHTML = events.map((e, idx) => {
     // "is-left/is-right" means the marker (bend) hugs that edge.
     // The card is rendered on the opposite side to sit inside the bend.
@@ -117,20 +147,25 @@ async function loadEvents() {
     }
 
     const mosaicImgs = mosaicKeys
-      .map((k) => {
+      .map((k, i) => {
         const u = imgUrl(k).replace(/'/g, "%27");
-        return `<span class="mosaic-tile tile-img" style="--tile-img:url('${u}')" aria-hidden="true"></span>`;
+        const vars = tileVars(i, desired, rnd);
+        return `<span class="mosaic-tile tile-img" style="${vars};--tile-img:url('${u}')" aria-hidden="true"></span>`;
       })
       .join("");
     const mosaicPh = Array.from({ length: placeholders })
-      .map(() => {
+      .map((_, i0) => {
+        const i = mosaicKeys.length + i0;
+        const vars = tileVars(i, desired, rnd);
         const hue = Math.floor(rnd() * 360);
-        return `<span class="mosaic-tile mosaic-ph" style="--ph-hue:${hue}deg" aria-hidden="true"></span>`;
+        return `<span class="mosaic-tile mosaic-ph" style="${vars};--ph-hue:${hue}deg" aria-hidden="true"></span>`;
       })
       .join("");
 
+    const arSrc = mosaicKeys.length ? imgUrl(mosaicKeys[0]).replace(/"/g, "&quot;") : "";
+    const arAttr = arSrc ? ` data-ar-src="${arSrc}"` : "";
     const mosaic = `
-      <div class="event-mosaic stack mosaic-${desired}" aria-hidden="true">
+      <div class="event-mosaic stack mosaic-${desired}"${arAttr} aria-hidden="true">
         ${mosaicImgs}${mosaicPh}
       </div>
     `;
@@ -150,6 +185,42 @@ async function loadEvents() {
       </div>
     `;
   }).join("");
+
+  // Hydrate mosaic width/height from real image dimensions.
+  // This keeps the glass block size proportional to the photo (both width+height).
+  const mosaics = Array.from(document.querySelectorAll(".event-mosaic[data-ar-src]"));
+  mosaics.forEach((m) => {
+    if (m.dataset.arApplied === "1") return;
+    const src = m.dataset.arSrc || "";
+    if (!src) return;
+    m.dataset.arApplied = "1";
+
+    const img = new Image();
+    img.decoding = "async";
+    img.loading = "eager";
+    img.onload = () => {
+      const w = img.naturalWidth || 0;
+      const h = img.naturalHeight || 0;
+      if (w > 0 && h > 0) {
+        const isSmall = window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
+        const targetMax = isSmall ? 240 : 320;
+        const targetMin = isSmall ? 160 : 190;
+
+        let s = targetMax / Math.max(w, h);
+        // Ensure it doesn't get too tiny.
+        s = Math.max(s, targetMin / Math.min(w, h));
+
+        const ww = Math.round(w * s);
+        const hh = Math.round(h * s);
+        m.style.setProperty("--mosaic-w", `${ww}px`);
+        m.style.setProperty("--mosaic-h", `${hh}px`);
+      }
+    };
+    img.onerror = () => {
+      // Keep default ratio.
+    };
+    img.src = src;
+  });
 
   updateTimelineRail();
 
