@@ -143,16 +143,21 @@ body{
   margin: 0 auto;
 }
 
+/* Timeline wants more horizontal room for big bends */
+.timeline-page .wrap{
+  max-width: 1500px;
+}
+
 /* ---------- Timeline (vertical) ---------- */
 .timeline-stage{
   position: relative;
 }
 .timeline-rail{
   position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
   top: 0;
-  width: 260px;
+  width: 100%;
   height: 100%;
   pointer-events: none;
   z-index: 0;
@@ -165,26 +170,20 @@ body{
   z-index: 1;
 }
 .timeline-item{
-  display: grid;
-  grid-template-columns: 1fr 180px 1fr;
-  align-items: start;
-  column-gap: 14px;
-}
-.timeline-side{
-  min-width: 0;
-}
-.timeline-center{
   position: relative;
-  min-height: 1px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+  column-gap: 140px;
+  padding: 6px 0;
 }
 .timeline-marker{
+  position: absolute;
   width: 14px;
   height: 14px;
   border-radius: 999px;
-  margin-top: 26px;
-  justify-self: center;
-  margin-left: auto;
-  margin-right: auto;
+  top: 28px;
+  transform: translateX(-50%);
   background: rgba(255,255,255,0.72);
   box-shadow:
     0 0 0 6px rgba(255,255,255,0.05),
@@ -193,45 +192,45 @@ body{
 }
 
 .timeline-item.is-left .timeline-marker{
-  transform: translateX(-44px);
+  left: 6%;
 }
 .timeline-item.is-right .timeline-marker{
-  transform: translateX(44px);
+  left: 94%;
 }
 
-.timeline-item.is-left .timeline-side.left{
-  display: flex;
-  justify-content: flex-end;
+/* Card sits inside the big bend (opposite side of the edge marker) */
+.timeline-item.is-left .event-card{
+  grid-column: 2;
+  justify-self: start;
 }
-.timeline-item.is-right .timeline-side.right{
-  display: flex;
-  justify-content: flex-start;
+.timeline-item.is-right .event-card{
+  grid-column: 1;
+  justify-self: end;
 }
 
 /* Limit card width so the composition breathes */
 .timeline-page .event-card{
   max-width: 520px;
-  width: 100%;
+  width: min(520px, 100%);
 }
 
 @media (max-width: 900px){
+  .timeline-page .wrap{ max-width: 1200px; }
   .timeline-item{
-    grid-template-columns: 140px 1fr;
-  }
-  .timeline-rail{
-    left: 0;
-    transform: none;
-    width: 220px;
-  }
-  .timeline-center{ display: block; }
-  .timeline-side.left{ display: none; }
-  .timeline-item.is-right .timeline-side.right,
-  .timeline-item.is-left .timeline-side.right{
-    display: block;
+    grid-template-columns: 1fr;
+    column-gap: 0;
+    padding-left: 16px;
+    padding-right: 16px;
   }
   .timeline-item.is-left .timeline-marker,
   .timeline-item.is-right .timeline-marker{
-    transform: none;
+    left: 18px;
+  }
+  .timeline-item.is-left .event-card,
+  .timeline-item.is-right .event-card{
+    grid-column: 1;
+    justify-self: stretch;
+    margin-left: 28px;
   }
 }
 

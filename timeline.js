@@ -53,7 +53,9 @@ async function loadEvents() {
   emptyEl.style.display = "none";
 
   eventsEl.innerHTML = events.map((e, idx) => {
-    const side = idx % 2 === 0 ? "right" : "left";
+    // "is-left/is-right" means the marker (bend) hugs that edge.
+    // The card is rendered on the opposite side to sit inside the bend.
+    const edge = idx % 2 === 0 ? "left" : "right";
     const cover = e.coverKey
       ? `<img class="event-cover" loading="lazy" src="${imgUrl(e.coverKey)}" alt="" />`
       : `<div class="event-cover placeholder"></div>`;
@@ -76,12 +78,9 @@ async function loadEvents() {
     `;
 
     return `
-      <div class="timeline-item is-${side}">
-        <div class="timeline-side left">${side === "left" ? card : ""}</div>
-        <div class="timeline-center">
-          <div class="timeline-marker" aria-hidden="true"></div>
-        </div>
-        <div class="timeline-side right">${side === "right" ? card : ""}</div>
+      <div class="timeline-item is-${edge}">
+        <div class="timeline-marker" aria-hidden="true"></div>
+        ${card}
       </div>
     `;
   }).join("");
@@ -136,10 +135,10 @@ function updateTimelineRail() {
   railRaf = requestAnimationFrame(() => {
     const stageRect = stage.getBoundingClientRect();
     const height = Math.max(260, stage.scrollHeight);
-    const width = 260;
+    const width = Math.max(320, Math.floor(stageRect.width));
     rail.style.height = `${height}px`;
 
-    // rail is centered via CSS; measure its box for x coords
+    // rail is full-width; measure its box for x coords
     const railRect = rail.getBoundingClientRect();
 
     const markers = Array.from(document.querySelectorAll(".timeline-marker"));
@@ -172,8 +171,8 @@ function updateTimelineRail() {
     ];
 
     const d = catmullRomToBezier(padded);
-    const d2 = catmullRomToBezier(warpPoints(padded, 1.2, 7));
-    const d3 = catmullRomToBezier(warpPoints(padded, 3.1, 11));
+    const d2 = catmullRomToBezier(warpPoints(padded, 1.2, 9));
+    const d3 = catmullRomToBezier(warpPoints(padded, 3.1, 14));
 
     rail.innerHTML = `
       <svg class="rail-svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
