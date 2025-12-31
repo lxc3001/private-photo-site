@@ -139,10 +139,10 @@ async function loadEvents() {
 
     // Each cover gets its own fixed-size box (stable per eventId).
     const isSmall = window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
-    const minW = isSmall ? 150 : 180;
-    const maxW = isSmall ? 200 : 240;
-    const minH = isSmall ? 120 : 140;
-    const maxH = isSmall ? 170 : 200;
+    const minW = isSmall ? 150 : 360;
+    const maxW = isSmall ? 200 : 480;
+    const minH = isSmall ? 120 : 280;
+    const maxH = isSmall ? 170 : 400;
     const boxW = Math.round(minW + rnd() * (maxW - minW));
     const boxH = Math.round(minH + rnd() * (maxH - minH));
 

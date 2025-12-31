@@ -379,6 +379,11 @@ body{
 .timeline-page .event-mosaic .mosaic-tile.tile-img{
   background-image:
     var(--tile-img);
+  /* Keep original photo ratio: scale down to fit the tile box (no crop). */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: rgba(255,255,255,0.02);
 }
 
 /* Simple "floating card" highlight */
