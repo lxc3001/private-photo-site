@@ -90,27 +90,26 @@ async function loadEvents() {
     const t = depth > 0 ? i / depth : 0;
 
     // Larger, more varied offsets for different covers.
-    const spreadX = 26 + t * 110;
-    const spreadY = 22 + t * 120;
-    const dx = Math.round((rnd() * 2 - 1) * spreadX);
-    const dy = Math.round((rnd() * 2 - 1) * spreadY);
+    const spreadX = 44 + t * 190;
+    const spreadY = 38 + t * 210;
+    const magX = (0.55 + rnd() * 0.45) * spreadX;
+    const magY = (0.55 + rnd() * 0.45) * spreadY;
+    const dx = Math.round((rnd() < 0.5 ? -1 : 1) * magX);
+    const dy = Math.round((rnd() < 0.5 ? -1 : 1) * magY);
 
     // Depth spacing (front closer).
-    const dz = Math.round(88 - i * 18);
+    const dz = Math.round(74 - i * 16);
 
     // Rotation + scale differences.
     const rot = (rnd() * 2 - 1) * (0.8 + t * 1.3);
-    const sc = 1.03 - t * 0.16;
-
-    // Glass thickness taper (front slightly thicker).
-    const thick = Math.max(6, Math.round(12 - t * 5));
+    const sc = 1.02 - t * 0.14;
 
     // Back layers more transparent + blurrier.
-    const op = Math.max(0.28, 1 - t * 0.55);
-    const blur = Math.max(0, t * 5.2);
+    const op = Math.max(0.32, 1 - t * 0.52);
+    const blur = Math.max(0, t * 4.2);
 
     const zi = 100 - i;
-    return `--dx:${dx}px;--dy:${dy}px;--dz:${dz}px;--rot:${rot.toFixed(2)}deg;--sc:${sc.toFixed(3)};--thick:${thick}px;--op:${op.toFixed(3)};--blur:${blur.toFixed(2)}px;--zi:${zi}`;
+    return `--dx:${dx}px;--dy:${dy}px;--dz:${dz}px;--rot:${rot.toFixed(2)}deg;--sc:${sc.toFixed(3)};--op:${op.toFixed(3)};--blur:${blur.toFixed(2)}px;--zi:${zi}`;
   }
 
   eventsEl.innerHTML = events.map((e, idx) => {
@@ -203,8 +202,8 @@ async function loadEvents() {
       const h = img.naturalHeight || 0;
       if (w > 0 && h > 0) {
         const isSmall = window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
-        const targetMax = isSmall ? 240 : 320;
-        const targetMin = isSmall ? 160 : 190;
+        const targetMax = isSmall ? 190 : 240;
+        const targetMin = isSmall ? 120 : 150;
 
         let s = targetMax / Math.max(w, h);
         // Ensure it doesn't get too tiny.
