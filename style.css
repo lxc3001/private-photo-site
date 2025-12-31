@@ -352,10 +352,13 @@ body{
 .timeline-page .event-mosaic.stack-cards{
   display: grid;
   place-items: stretch;
+  transform-origin: center;
+  transition: transform .22s ease;
 }
 
 .timeline-page .event-card:hover .event-mosaic.stack-cards{
   overflow: visible;
+  transform: scale(1.08);
 }
 
 .timeline-page .event-mosaic.stack-cards .mosaic-tile{
@@ -365,7 +368,9 @@ body{
   top: auto;
   width: 100%;
   height: 100%;
-  opacity: 1;
+  align-self: center;
+  justify-self: center;
+  opacity: var(--op, 1);
   filter: none;
   border-radius: 14px;
   transform-style: preserve-3d;
@@ -377,6 +382,32 @@ body{
   transform: translate3d(var(--tx), var(--ty), 0px) rotate(var(--rot)) scale(var(--sc));
 }
 
+/* Different sizes per image, preserving original aspect ratio (no crop) */
+.timeline-page .event-mosaic.stack-cards .mosaic-tile.tile-img{
+  width: auto;
+  height: calc(100% * var(--cardSize, 0.92));
+  aspect-ratio: var(--ar, 1);
+  max-width: 100%;
+  max-height: 100%;
+  background: none;
+  overflow: hidden;
+}
+
+.timeline-page .event-mosaic.stack-cards .mosaic-tile.tile-img img{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  border-radius: inherit;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.timeline-page .event-mosaic.stack-cards .mosaic-tile.mosaic-ph{
+  width: 100%;
+  height: 100%;
+}
+
 .timeline-page .event-card:hover .event-mosaic.stack-cards .mosaic-tile{
   transform:
     translate3d(var(--htx, var(--tx)), var(--hty, var(--ty)), 0px)
@@ -385,12 +416,12 @@ body{
 }
 
 /* Base stacked offsets + hover scatter (up to 6 tiles) */
-.timeline-page .event-mosaic.stack-cards .mosaic-tile:nth-child(1){ --zi: 6; --tx: 0px; --ty: 0px; --rot: 0.2deg; --sc: 1.00;  --htx:  0px; --hty: -10px; --hrot:  0.4deg; --hsc: 1.02; }
-.timeline-page .event-mosaic.stack-cards .mosaic-tile:nth-child(2){ --zi: 5; --tx:-6px; --ty: 6px; --rot:-1.6deg; --sc: 0.99; --htx:-18px; --hty: 10px; --hrot: -3.0deg; --hsc: 1.01; }
-.timeline-page .event-mosaic.stack-cards .mosaic-tile:nth-child(3){ --zi: 4; --tx: 7px; --ty: 7px; --rot: 1.8deg; --sc: 0.98;  --htx: 18px; --hty: 14px; --hrot:  3.2deg; --hsc: 1.00; }
-.timeline-page .event-mosaic.stack-cards .mosaic-tile:nth-child(4){ --zi: 3; --tx:-9px; --ty:-4px; --rot:-2.1deg; --sc: 0.97; --htx:-22px; --hty:-16px; --hrot: -4.0deg; --hsc: 0.99; }
-.timeline-page .event-mosaic.stack-cards .mosaic-tile:nth-child(5){ --zi: 2; --tx: 9px; --ty:-5px; --rot: 2.4deg; --sc: 0.96;  --htx: 24px; --hty:-18px; --hrot:  4.2deg; --hsc: 0.98; }
-.timeline-page .event-mosaic.stack-cards .mosaic-tile:nth-child(6){ --zi: 1; --tx: 0px; --ty:10px; --rot:-0.8deg; --sc: 0.95;  --htx:  0px; --hty: 22px; --hrot: -2.0deg; --hsc: 0.97; }
+.timeline-page .event-mosaic.stack-cards .mosaic-tile:nth-child(1){ --zi: 6; --op: 1.00; --tx: 0px;  --ty:-2px;  --rot: 0.4deg;  --sc: 1.00; --htx:   0px; --hty: -26px; --hrot:  0.8deg; --hsc: 1.05; }
+.timeline-page .event-mosaic.stack-cards .mosaic-tile:nth-child(2){ --zi: 5; --op: 0.92; --tx:-16px;--ty: 14px;  --rot:-3.2deg; --sc: 0.99; --htx: -44px; --hty:  26px; --hrot: -7.0deg; --hsc: 1.04; }
+.timeline-page .event-mosaic.stack-cards .mosaic-tile:nth-child(3){ --zi: 4; --op: 0.84; --tx: 18px;--ty: 16px;  --rot: 3.6deg;  --sc: 0.98; --htx:  48px; --hty:  30px; --hrot:  7.4deg; --hsc: 1.03; }
+.timeline-page .event-mosaic.stack-cards .mosaic-tile:nth-child(4){ --zi: 3; --op: 0.76; --tx:-22px;--ty:-10px;  --rot:-4.4deg; --sc: 0.97; --htx: -56px; --hty: -40px; --hrot: -9.2deg; --hsc: 1.02; }
+.timeline-page .event-mosaic.stack-cards .mosaic-tile:nth-child(5){ --zi: 2; --op: 0.68; --tx: 24px;--ty:-12px;  --rot: 4.8deg;  --sc: 0.96; --htx:  60px; --hty: -44px; --hrot:  9.6deg; --hsc: 1.01; }
+.timeline-page .event-mosaic.stack-cards .mosaic-tile:nth-child(6){ --zi: 1; --op: 0.60; --tx: 0px;  --ty: 24px;  --rot:-2.2deg; --sc: 0.95; --htx:   0px; --hty:  58px; --hrot: -5.0deg; --hsc: 1.00; }
 
 /* Grid collage (original style) */
 .timeline-page .event-mosaic.mosaic-grid{

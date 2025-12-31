@@ -52,6 +52,37 @@ async function loadEvents() {
   }
   emptyEl.style.display = "none";
 
+  async function hydrateStackCardSizes(root) {
+    const tiles = Array.from(root.querySelectorAll(".event-mosaic.stack-cards .mosaic-tile.tile-img"));
+    await Promise.allSettled(tiles.map(async (tile) => {
+      const img = tile.querySelector("img");
+      if (!img) return;
+
+      // Ensure we have natural sizes.
+      if (!img.complete || img.naturalWidth === 0) {
+        try { await img.decode(); } catch { /* ignore */ }
+      }
+      const w = img.naturalWidth || 0;
+      const h = img.naturalHeight || 0;
+      if (!w || !h) return;
+
+      const ar = w / h;
+      const layer = Number(tile.getAttribute("data-layer") || "0");
+      const count = Math.max(1, Number(tile.getAttribute("data-count") || "1"));
+      const depth = count - 1;
+      const t = depth > 0 ? layer / depth : 0;
+
+      // Size rule: keep original ratio, scale down more for extreme aspect ratios
+      // and for deeper layers to create a stronger "thick stack".
+      const aspectPenalty = Math.min(0.16, Math.abs(Math.log(ar)) * 0.09);
+      const base = 0.94 - t * 0.10;
+      const size = Math.max(0.70, Math.min(0.94, base - aspectPenalty));
+
+      tile.style.setProperty("--ar", String(Math.round(ar * 1000) / 1000));
+      tile.style.setProperty("--cardSize", String(Math.round(size * 1000) / 1000));
+    }));
+  }
+
   function hash32(str) {
     // FNV-1a
     let h = 2166136261;
@@ -166,7 +197,7 @@ async function loadEvents() {
     const mosaicImgs = mosaicKeys
       .map((k, i) => {
         const u = imgUrl(k).replace(/'/g, "%27");
-        return `<span class="mosaic-tile tile-img" style="--tile-img:url('${u}')" aria-hidden="true"></span>`;
+        return `<span class="mosaic-tile tile-img" data-layer="${i}" data-count="${desired}" style="--tile-img:url('${u}')" aria-hidden="true"><img src="${u}" alt="" loading="lazy" decoding="async" draggable="false"></span>`;
       })
       .join("");
     const mosaicPh = Array.from({ length: placeholders })
@@ -197,6 +228,9 @@ async function loadEvents() {
       </div>
     `;
   }).join("");
+
+  // After DOM is painted, hydrate per-image aspect ratios for stacked covers.
+  hydrateStackCardSizes(eventsEl);
 
   updateTimelineRail();
 }
