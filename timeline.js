@@ -83,33 +83,51 @@ async function loadEvents() {
     return arr;
   }
 
-  function tileVars(layerIndex, layerCount, rnd) {
-    // layerIndex: 0 is front
+  function tileVars(layerIndex, layerCount, rnd, anchorOrder) {
+    // The back-most layer is a full-cover base to ensure the composition
+    // fills the whole box and touches all edges.
     const i = layerIndex;
+    const backIndex = layerCount - 1;
     const depth = layerCount - 1;
     const t = depth > 0 ? i / depth : 0;
 
-    // Larger, more varied offsets for different covers.
-    const spreadX = 44 + t * 190;
-    const spreadY = 38 + t * 210;
-    const magX = (0.55 + rnd() * 0.45) * spreadX;
-    const magY = (0.55 + rnd() * 0.45) * spreadY;
-    const dx = Math.round((rnd() < 0.5 ? -1 : 1) * magX);
-    const dy = Math.round((rnd() < 0.5 ? -1 : 1) * magY);
+    let x = 0;
+    let y = 0;
+    let w = 100;
+    let h = 100;
 
-    // Depth spacing (front closer).
-    const dz = Math.round(74 - i * 16);
+    if (i !== backIndex) {
+      // Card sizes within the box.
+      w = Math.round((76 + rnd() * 20) * 10) / 10; // 76..96%
+      h = Math.round((76 + rnd() * 20) * 10) / 10;
+
+      const anchor = anchorOrder[i % anchorOrder.length];
+      // Anchor to edges so photo edges coincide with box edges.
+      // 0: LT, 1: RT, 2: LB, 3: RB
+      if (anchor === 0 || anchor === 2) x = 0;
+      else x = Math.max(0, 100 - w);
+
+      if (anchor === 0 || anchor === 1) y = 0;
+      else y = Math.max(0, 100 - h);
+    }
+
+    // Depth spacing (front closer). Back base is deepest.
+    const dz = Math.round(56 - i * 12);
 
     // Rotation + scale differences.
-    const rot = (rnd() * 2 - 1) * (0.8 + t * 1.3);
-    const sc = 1.02 - t * 0.14;
+    const rot = (rnd() * 2 - 1) * (0.8 + t * 1.0);
+    const sc = 1.02 - t * 0.12;
 
     // Back layers more transparent + blurrier.
-    const op = Math.max(0.32, 1 - t * 0.52);
-    const blur = Math.max(0, t * 4.2);
+    let op = Math.max(0.30, 1 - t * 0.55);
+    let blur = Math.max(0, t * 3.6);
+    if (i === backIndex) {
+      op = Math.min(op, 0.30);
+      blur = Math.max(blur, 1.8);
+    }
 
     const zi = 100 - i;
-    return `--dx:${dx}px;--dy:${dy}px;--dz:${dz}px;--rot:${rot.toFixed(2)}deg;--sc:${sc.toFixed(3)};--op:${op.toFixed(3)};--blur:${blur.toFixed(2)}px;--zi:${zi}`;
+    return `--x:${x}%;--y:${y}%;--w:${w}%;--h:${h}%;--dz:${dz}px;--rot:${rot.toFixed(2)}deg;--sc:${sc.toFixed(3)};--op:${op.toFixed(3)};--blur:${blur.toFixed(2)}px;--zi:${zi}`;
   }
 
   eventsEl.innerHTML = events.map((e, idx) => {
@@ -118,6 +136,15 @@ async function loadEvents() {
     const edge = idx % 2 === 0 ? "left" : "right";
     const rnd = mulberry32(hash32(String(e.eventId || idx)));
     const totalCount = typeof e.count === "number" ? e.count : 0;
+
+    // Each cover gets its own fixed-size box (stable per eventId).
+    const isSmall = window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
+    const minW = isSmall ? 150 : 180;
+    const maxW = isSmall ? 200 : 240;
+    const minH = isSmall ? 120 : 140;
+    const maxH = isSmall ? 170 : 200;
+    const boxW = Math.round(minW + rnd() * (maxW - minW));
+    const boxH = Math.round(minH + rnd() * (maxH - minH));
 
     // Cover selection rules:
     // - total > 6: pick N images, where N is a stable-random int in [3,6]
@@ -145,26 +172,38 @@ async function loadEvents() {
       placeholders = Math.max(0, desired - mosaicKeys.length);
     }
 
+    // Vary edge-anchoring patterns between covers.
+    // 0: LT,RT,LB,RB
+    // 1: LT,LB,RT,RB
+    // 2: RT,RB,LT,LB
+    // 3: RB,LB,RT,LT
+    const pattern = Math.floor(rnd() * 4);
+    const anchorOrders = [
+      [0, 1, 2, 3],
+      [0, 2, 1, 3],
+      [1, 3, 0, 2],
+      [3, 2, 1, 0],
+    ];
+    const anchorOrder = anchorOrders[pattern] || anchorOrders[0];
+
     const mosaicImgs = mosaicKeys
       .map((k, i) => {
         const u = imgUrl(k).replace(/'/g, "%27");
-        const vars = tileVars(i, desired, rnd);
+        const vars = tileVars(i, desired, rnd, anchorOrder);
         return `<span class="mosaic-tile tile-img" style="${vars};--tile-img:url('${u}')" aria-hidden="true"></span>`;
       })
       .join("");
     const mosaicPh = Array.from({ length: placeholders })
       .map((_, i0) => {
         const i = mosaicKeys.length + i0;
-        const vars = tileVars(i, desired, rnd);
+        const vars = tileVars(i, desired, rnd, anchorOrder);
         const hue = Math.floor(rnd() * 360);
         return `<span class="mosaic-tile mosaic-ph" style="${vars};--ph-hue:${hue}deg" aria-hidden="true"></span>`;
       })
       .join("");
 
-    const arSrc = mosaicKeys.length ? imgUrl(mosaicKeys[0]).replace(/"/g, "&quot;") : "";
-    const arAttr = arSrc ? ` data-ar-src="${arSrc}"` : "";
     const mosaic = `
-      <div class="event-mosaic stack mosaic-${desired}"${arAttr} aria-hidden="true">
+      <div class="event-mosaic stack mosaic-${desired}" style="--mosaic-w:${boxW}px;--mosaic-h:${boxH}px" aria-hidden="true">
         ${mosaicImgs}${mosaicPh}
       </div>
     `;
@@ -185,48 +224,7 @@ async function loadEvents() {
     `;
   }).join("");
 
-  // Hydrate mosaic width/height from real image dimensions.
-  // This keeps the glass block size proportional to the photo (both width+height).
-  const mosaics = Array.from(document.querySelectorAll(".event-mosaic[data-ar-src]"));
-  mosaics.forEach((m) => {
-    if (m.dataset.arApplied === "1") return;
-    const src = m.dataset.arSrc || "";
-    if (!src) return;
-    m.dataset.arApplied = "1";
-
-    const img = new Image();
-    img.decoding = "async";
-    img.loading = "eager";
-    img.onload = () => {
-      const w = img.naturalWidth || 0;
-      const h = img.naturalHeight || 0;
-      if (w > 0 && h > 0) {
-        const isSmall = window.matchMedia && window.matchMedia("(max-width: 900px)").matches;
-        const targetMax = isSmall ? 190 : 240;
-        const targetMin = isSmall ? 120 : 150;
-
-        let s = targetMax / Math.max(w, h);
-        // Ensure it doesn't get too tiny.
-        s = Math.max(s, targetMin / Math.min(w, h));
-
-        const ww = Math.round(w * s);
-        const hh = Math.round(h * s);
-        m.style.setProperty("--mosaic-w", `${ww}px`);
-        m.style.setProperty("--mosaic-h", `${hh}px`);
-      }
-    };
-    img.onerror = () => {
-      // Keep default ratio.
-    };
-    img.src = src;
-  });
-
   updateTimelineRail();
-
-  // Images can change layout height after load; re-sync the rail.
-  eventsEl.querySelectorAll("img").forEach((img) => {
-    img.addEventListener("load", () => updateTimelineRail(), { once: true });
-  });
 }
 
 function warpPoints(points, phase, amp) {
